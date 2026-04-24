@@ -211,6 +211,14 @@
       display: flex; align-items: center; gap: 10px;
     }
 
+    #vol-btn {
+      background: rgba(0,0,0,0.18); border: 1px solid rgba(184,146,216,0.12);
+      color: var(--muted); width: 30px; height: 30px; border-radius: 50%;
+      cursor: pointer; font-size: 13px; display: flex; align-items: center;
+      justify-content: center; transition: background 0.2s, color 0.2s; flex-shrink: 0;
+    }
+    #vol-btn:hover { background: rgba(184,146,216,0.1); color: var(--lavender); }
+
     .live-dot {
       display: flex; align-items: center; gap: 6px;
       background: rgba(180,30,60,0.18);
@@ -652,6 +660,8 @@
 <div class="deco-moon" id="moon1">🌙</div>
 <div class="deco-moon" id="moon2">✦</div>
 
+<audio id="ambient" src="/bg.mp3" loop preload="auto"></audio>
+
 <!-- ═══ LANDING ═══ -->
 <div id="landing">
   <div id="landing-glow"></div>
@@ -673,6 +683,7 @@
       <div class="tagline">☽ &nbsp; fairy of the celestial realm &nbsp; ☾</div>
     </div>
     <div id="topbar-right">
+      <button id="vol-btn" title="Toggle mute">🔊</button>
       <div class="live-dot" id="live-indicator" style="display:none">
         <div class="live-dot-pulse"></div>
         live
@@ -1184,8 +1195,14 @@
   const topbar    = document.getElementById('topbar');
   const tabNav    = document.getElementById('tab-nav');
   const enterBtn  = document.getElementById('enter-btn');
+  const volBtn    = document.getElementById('vol-btn');
+  const audio     = document.getElementById('ambient');
+
+  audio.volume = 0.06;
+  let muted = false;
 
   enterBtn.addEventListener('click', () => {
+    audio.play().catch(() => {});
     landing.classList.add('fade-out');
     setTimeout(() => {
       landing.style.display = 'none';
@@ -1195,6 +1212,12 @@
         tabNav.classList.add('show');
       }, 150);
     }, 1600);
+  });
+
+  volBtn.addEventListener('click', () => {
+    muted = !muted;
+    audio.muted = muted;
+    volBtn.textContent = muted ? '🔇' : '🔊';
   });
 
   // ── TAB ROUTING ──
