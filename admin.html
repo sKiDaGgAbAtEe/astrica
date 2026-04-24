@@ -456,7 +456,8 @@
 
 <script>
 // ── CONFIG ──
-const API = 'https://cocreate-production.up.railway.app';
+const API    = 'https://cocreate-production.up.railway.app';
+const PW_KEY = 'alex_admin_pw';
 
 // ── STARFIELD ──
 const sf = document.getElementById('stars');
@@ -466,7 +467,7 @@ for (let i = 0; i < 60; i++) {
   Object.assign(s.style, {
     width: sz+'px', height: sz+'px',
     left: Math.random()*100+'%', top: Math.random()*100+'%',
-    '--d': (Math.random()*4+2).toFixed(1)+'s',
+    '--d':  (Math.random()*4+2).toFixed(1)+'s',
     '--dl': (Math.random()*5).toFixed(1)+'s',
     '--lo': (Math.random()*0.06+0.02).toFixed(2),
     '--hi': (Math.random()*0.4+0.2).toFixed(2),
@@ -474,22 +475,22 @@ for (let i = 0; i < 60; i++) {
   sf.appendChild(s);
 }
 
-// ── AUTH ──
-async function tryLogin(pw) {
-  const r = await fetch(`${API}/api/alex/admin/login`, {
-    method: 'POST', credentials: 'include',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ password: pw })
-  });
-  return r.ok;
-}
+// ── AUTH — password stored in localStorage, sent as header on every request ──
+function getSavedPw() { return localStorage.getItem(PW_KEY) || ''; }
 
-async function checkSession() {
+async function tryLogin(pw) {
   try {
-    const r = await fetch(`${API}/api/alex/admin/check`, { credentials: 'include' });
-    const d = await r.json();
-    return d.authed;
-  } catch { return false; }
+    const r = await fetch(`${API}/api/alex/admin/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password: pw })
+    });
+    if (r.ok) { localStorage.setItem(PW_KEY, pw); return true; }
+    return false;
+  } catch(e) {
+    document.getElementById('login-err').textContent = 'Cannot reach server';
+    return false;
+  }
 }
 
 function showApp() {
@@ -502,21 +503,22 @@ document.getElementById('login-btn').addEventListener('click', async () => {
   const pw  = document.getElementById('login-pw').value.trim();
   const err = document.getElementById('login-err');
   if (!pw) return;
+  err.textContent = 'checking…';
   const ok = await tryLogin(pw);
-  if (ok) { showApp(); }
-  else    { err.textContent = 'incorrect password'; setTimeout(() => err.textContent = '', 2000); }
+  if (ok) showApp();
+  else { err.textContent = 'incorrect password'; setTimeout(() => err.textContent = '', 2500); }
 });
 document.getElementById('login-pw').addEventListener('keydown', e => {
   if (e.key === 'Enter') document.getElementById('login-btn').click();
 });
-
-document.getElementById('logout-btn').addEventListener('click', async () => {
-  await fetch(`${API}/api/alex/admin/logout`, { method: 'POST', credentials: 'include' });
+document.getElementById('logout-btn').addEventListener('click', () => {
+  localStorage.removeItem(PW_KEY);
   location.reload();
 });
 
-// Auto-check session on load
-checkSession().then(ok => { if (ok) showApp(); });
+// Auto-login if password saved from a previous visit
+const _saved = getSavedPw();
+if (_saved) tryLogin(_saved).then(ok => { if (ok) showApp(); });
 
 // ── TABS ──
 document.querySelectorAll('.nav-tab').forEach(btn => {
@@ -528,22 +530,21 @@ document.querySelectorAll('.nav-tab').forEach(btn => {
   });
 });
 
-// ── HELPERS ──
+// ── API HELPERS ──
+function authHeaders(extra) {
+  return { 'Content-Type': 'application/json', 'X-Alex-Admin': getSavedPw(), ...extra };
+}
 function apiGet(path) {
-  return fetch(`${API}${path}`, { credentials: 'include' }).then(r => r.json());
+  return fetch(`${API}${path}`, { headers: { 'X-Alex-Admin': getSavedPw() } }).then(r => r.json());
 }
 function apiPost(path, body) {
   return fetch(`${API}${path}`, {
-    method: 'POST', credentials: 'include',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body)
+    method: 'POST', headers: authHeaders(), body: JSON.stringify(body)
   }).then(r => r.json());
 }
 function apiDel(path, body) {
   return fetch(`${API}${path}`, {
-    method: 'DELETE', credentials: 'include',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body)
+    method: 'DELETE', headers: authHeaders(), body: JSON.stringify(body)
   }).then(r => r.json());
 }
 
@@ -556,8 +557,8 @@ function showStatus(id, ok, msg) {
 
 // ══ LEADERBOARD ══════════════════════════════════════════════════════════════
 const AUTO_GAMES = ['cheers', 'gifters', 'points'];
-let lbData  = null;
-let lbGame  = 'trivia';
+let lbData = null;
+let lbGame = 'trivia';
 
 async function loadLeaderboard() {
   lbData = await apiGet('/api/alex/leaderboard');
@@ -582,17 +583,15 @@ function renderLbEntries() {
   const tbody   = document.getElementById('lb-tbody');
   tbody.innerHTML = '';
   entries.forEach((e, i) => {
-    const rankClass = i === 0 ? 'r1' : i === 1 ? 'r2' : i === 2 ? 'r3' : '';
-    const medal     = i === 0 ? '👑' : i === 1 ? '✦' : i === 2 ? '✧' : '';
+    const rankClass = i===0?'r1':i===1?'r2':i===2?'r3':'';
+    const medal     = i===0?'👑':i===1?'✦':i===2?'✧':'';
     const tr = document.createElement('tr');
     tr.innerHTML = `
-      <td class="rank ${rankClass}">${medal || (i+1)}</td>
+      <td class="rank ${rankClass}">${medal||(i+1)}</td>
       <td>${escHtml(e.name)}</td>
       <td class="score">${escHtml(String(e.score))}</td>
-      <td class="meta">${escHtml(e.meta || '')}</td>
-      <td class="del">
-        <button class="btn sm rose" data-del="${escHtml(e.name)}">✕</button>
-      </td>`;
+      <td class="meta">${escHtml(e.meta||'')}</td>
+      <td class="del"><button class="btn sm rose" data-del="${escHtml(e.name)}">✕</button></td>`;
     tbody.appendChild(tr);
   });
   tbody.querySelectorAll('[data-del]').forEach(btn => {
@@ -656,18 +655,16 @@ function renderEvents() {
         <input type="text" data-ev="${i}" data-key="tags" value="${escAttr((ev.tags||[]).join(', '))}"/></div>`;
     list.appendChild(card);
   });
-
   list.querySelectorAll('[data-ev]').forEach(el => {
     el.addEventListener('input', () => {
       const i   = parseInt(el.dataset.ev);
       const key = el.dataset.key;
       let val   = el.value;
       if (key === 'featured') val = val === 'true';
-      if (key === 'tags')     val = val.split(',').map(t => t.trim()).filter(Boolean);
+      if (key === 'tags')     val = val.split(',').map(t=>t.trim()).filter(Boolean);
       eventsData[i][key] = val;
     });
   });
-
   list.querySelectorAll('.delete-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       eventsData.splice(parseInt(btn.dataset.idx), 1);
@@ -677,14 +674,14 @@ function renderEvents() {
 }
 
 document.getElementById('add-event-btn').addEventListener('click', () => {
-  eventsData.push({ name: '', date: '', desc: '', link: 'https://twitch.tv/astricalex', featured: false, tags: [] });
+  eventsData.push({ name:'', date:'', desc:'', link:'https://twitch.tv/astricalex', featured:false, tags:[] });
   renderEvents();
-  document.getElementById('events-list').lastElementChild?.scrollIntoView({ behavior: 'smooth' });
+  document.getElementById('events-list').lastElementChild?.scrollIntoView({ behavior:'smooth' });
 });
 
 document.getElementById('save-events-btn').addEventListener('click', async () => {
   const r = await apiPost('/api/alex/admin/events', { events: eventsData });
-  showStatus('events-status', r.ok, r.ok ? `✓ saved ${r.count} events` : '✗ ' + r.error);
+  showStatus('events-status', r.ok, r.ok ? `✓ saved ${r.count} events` : '✗ '+r.error);
 });
 
 // ══ SCHEDULE ═════════════════════════════════════════════════════════════════
@@ -716,11 +713,8 @@ function renderSchedule() {
         <textarea data-sc="${i}" data-key="desc">${escHtml(s.desc||'')}</textarea></div>`;
     list.appendChild(card);
   });
-
   list.querySelectorAll('[data-sc]').forEach(el => {
-    el.addEventListener('input', () => {
-      schedData[parseInt(el.dataset.sc)][el.dataset.key] = el.value;
-    });
+    el.addEventListener('input', () => { schedData[parseInt(el.dataset.sc)][el.dataset.key] = el.value; });
   });
   list.querySelectorAll('.delete-btn').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -731,14 +725,14 @@ function renderSchedule() {
 }
 
 document.getElementById('add-sched-btn').addEventListener('click', () => {
-  schedData.push({ icon: '🌙', day: '', label: '', desc: '' });
+  schedData.push({ icon:'🌙', day:'', label:'', desc:'' });
   renderSchedule();
-  document.getElementById('sched-list').lastElementChild?.scrollIntoView({ behavior: 'smooth' });
+  document.getElementById('sched-list').lastElementChild?.scrollIntoView({ behavior:'smooth' });
 });
 
 document.getElementById('save-sched-btn').addEventListener('click', async () => {
   const r = await apiPost('/api/alex/admin/schedule', { recurring: schedData });
-  showStatus('sched-status', r.ok, r.ok ? '✓ saved' : '✗ ' + r.error);
+  showStatus('sched-status', r.ok, r.ok ? '✓ saved' : '✗ '+r.error);
 });
 
 // ══ ABOUT ════════════════════════════════════════════════════════════════════
@@ -755,7 +749,7 @@ async function loadAbout() {
 }
 
 document.getElementById('save-about-btn').addEventListener('click', async () => {
-  const payload = {
+  const r = await apiPost('/api/alex/admin/about', {
     name:     document.getElementById('about-name').value,
     title:    document.getElementById('about-title').value,
     bio:      document.getElementById('about-bio').value,
@@ -766,23 +760,19 @@ document.getElementById('save-about-btn').addEventListener('click', async () => 
       discord: document.getElementById('social-discord').value,
       tiktok:  document.getElementById('social-tiktok').value,
     }
-  };
-  const r = await apiPost('/api/alex/admin/about', payload);
-  showStatus('about-status', r.ok, r.ok ? '✓ saved' : '✗ ' + r.error);
+  });
+  showStatus('about-status', r.ok, r.ok ? '✓ saved' : '✗ '+r.error);
 });
 
-// ══ EVENTSUB REGISTER ════════════════════════════════════════════════════════
+// ══ EVENTSUB ═════════════════════════════════════════════════════════════════
 document.getElementById('eventsub-btn').addEventListener('click', async () => {
   if (!confirm('Register Twitch EventSub webhooks for channel points, gift subs, and cheers?\n\nOnly needs to be done once.')) return;
   const btn = document.getElementById('eventsub-btn');
   btn.disabled = true; btn.textContent = 'Registering…';
   try {
     const r = await apiPost('/api/alex/admin/eventsub/register', {});
-    if (r.ok) {
-      alert('✓ EventSub webhooks registered!\n\n' + r.results.map(x => `${x.type}: ${x.status}`).join('\n'));
-    } else {
-      alert('Error: ' + r.error);
-    }
+    if (r.ok) alert('✓ Registered!\n\n' + r.results.map(x => `${x.type}: ${x.status}`).join('\n'));
+    else alert('Error: ' + r.error);
   } catch(e) { alert('Network error: ' + e.message); }
   finally { btn.disabled = false; btn.textContent = '⚡ Register EventSub'; }
 });
