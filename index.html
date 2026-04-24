@@ -744,7 +744,7 @@
         <span class="iframe-label">live stream</span>
       </div>
       <div class="iframe-wrap">
-        <iframe src="alex_stream.html" title="AstricAlex Live" allow="autoplay; fullscreen"></iframe>
+        <iframe src="stream.html" title="AstricAlex Live" allow="autoplay; fullscreen"></iframe>
       </div>
     </div>
 
@@ -960,6 +960,7 @@
       <div class="panel-inner">
 
         <div class="section-label">🌸 &nbsp; Upcoming</div>
+        <div id="events-upcoming">
 
         <div class="event-card featured">
           <div class="event-date-block">
@@ -1036,8 +1037,10 @@
           </div>
         </div>
 
+        </div><!-- /events-upcoming -->
         <div class="section-label" style="margin-top:22px;">☽ &nbsp; Recurring</div>
 
+        <div id="events-recurring">
         <div class="event-card">
           <div class="event-date-block" style="background:rgba(232,200,122,0.08);">
             <div class="event-month">Every</div>
@@ -1078,7 +1081,7 @@
         <span class="iframe-label">clips</span>
       </div>
       <div class="iframe-wrap">
-        <iframe src="alex_clips.html" title="AstricAlex Clips" allow="autoplay; fullscreen"></iframe>
+        <iframe src="clips.html" title="AstricAlex Clips" allow="autoplay; fullscreen"></iframe>
       </div>
     </div>
 
@@ -1105,22 +1108,22 @@
 
         <div class="section-label">✦ &nbsp; Find Me</div>
         <div class="social-row">
-          <a class="social-link" href="https://twitch.tv/astricalex" target="_blank" rel="noopener">
+          <a class="social-link" data-social="twitch" href="https://twitch.tv/astricalex" target="_blank" rel="noopener">
             📺 Twitch
           </a>
-          <a class="social-link" href="#" target="_blank" rel="noopener">
+          <a class="social-link" data-social="twitter" href="#" target="_blank" rel="noopener">
             🐦 Twitter / X
           </a>
-          <a class="social-link" href="#" target="_blank" rel="noopener">
+          <a class="social-link" data-social="discord" href="#" target="_blank" rel="noopener">
             💬 Discord
           </a>
-          <a class="social-link" href="#" target="_blank" rel="noopener">
+          <a class="social-link" data-social="tiktok" href="#" target="_blank" rel="noopener">
             🎵 TikTok
           </a>
         </div>
 
         <div class="section-label" style="margin-top:22px;">🌸 &nbsp; Stream Schedule</div>
-        <p class="about-bio" style="font-style:normal;font-size:13px;color:var(--muted);">
+        <p class="about-bio about-sched-text" style="font-style:normal;font-size:13px;color:var(--muted);">
           Friday nights · Sunday afternoons · Special events announced on Discord & Twitter. Check the Events tab for what's coming up next.
         </p>
 
@@ -1231,12 +1234,120 @@
     });
   });
 
-  // ── TWITCH LIVE CHECK ──
-  // Lightweight presence check using the Twitch embed loaded event
-  // (Real implementation would use Twitch Helix API via a backend proxy)
-  // For now the live indicator is hidden by default; you can force it on for testing:
-  // document.getElementById('live-indicator').style.display = 'flex';
-  // document.getElementById('home-live').style.display = 'inline-block';
+  // ── LIVE DATA LOADER ──
+  const API = 'https://cocreate-production.up.railway.app';
+
+  async function loadLiveData() {
+    try {
+      const [about, events, schedule, lb] = await Promise.all([
+        fetch(`${API}/api/alex/about`).then(r=>r.json()),
+        fetch(`${API}/api/alex/events`).then(r=>r.json()),
+        fetch(`${API}/api/alex/schedule`).then(r=>r.json()),
+        fetch(`${API}/api/alex/leaderboard`).then(r=>r.json()),
+      ]);
+      applyAbout(about);
+      applyEvents(events.events || [], schedule.recurring || []);
+      applyLeaderboard(lb.games || {});
+    } catch(e) {
+      console.warn('Could not load live data:', e.message);
+    }
+  }
+
+  function applyAbout(d) {
+    const bioEl = document.querySelector('#panel-about .about-bio');
+    if (bioEl && d.bio) bioEl.textContent = d.bio;
+    const titleEl = document.querySelector('#panel-about .about-title');
+    if (titleEl && d.title) titleEl.textContent = d.title;
+    const schedEl = document.querySelector('#panel-about .about-sched-text');
+    if (schedEl && d.schedule) schedEl.textContent = d.schedule;
+    const socials = { twitch: d.socials?.twitch, twitter: d.socials?.twitter, discord: d.socials?.discord, tiktok: d.socials?.tiktok };
+    document.querySelectorAll('.social-link[data-social]').forEach(a => {
+      const url = socials[a.dataset.social];
+      if (url) { a.href = url; a.style.display = ''; }
+      else a.style.display = 'none';
+    });
+  }
+
+  function applyEvents(events, recurring) {
+    // Upcoming events
+    const upEl = document.getElementById('events-upcoming');
+    if (upEl && events.length) {
+      upEl.innerHTML = events.map(ev => `
+        <div class="event-card ${ev.featured ? 'featured' : ''}">
+          <div class="event-date-block">
+            <div class="event-month">${escHtml(String(ev.date||'').split(' ')[0]||'')}</div>
+            <div class="event-day">${escHtml(String(ev.date||'').split(' ')[1]||'?')}</div>
+          </div>
+          <div class="event-body">
+            <div class="event-name">${escHtml(ev.name||'')}</div>
+            <div class="event-desc">${escHtml(ev.desc||'')}</div>
+            <div>${(ev.tags||[]).map(t=>`<span class="event-tag">${escHtml(t)}</span>`).join('')}</div>
+            ${ev.link ? `<a class="event-link" href="${escHtml(ev.link)}" target="_blank" rel="noopener">📺 Watch on Twitch</a>` : ''}
+          </div>
+        </div>`).join('');
+    }
+    // Recurring
+    const recEl = document.getElementById('events-recurring');
+    if (recEl && recurring.length) {
+      recEl.innerHTML = recurring.map(s => `
+        <div class="event-card">
+          <div class="event-date-block" style="background:rgba(184,146,216,0.08);">
+            <div class="event-month">Every</div>
+            <div class="event-day" style="font-size:14px;padding-top:4px;">${escHtml((s.day||'').slice(0,3))}</div>
+          </div>
+          <div class="event-body">
+            <div class="event-name">${escHtml(s.icon||'')} ${escHtml(s.label||'')}</div>
+            <div class="event-desc">${escHtml(s.desc||'')}</div>
+            <div><span class="event-tag">weekly</span></div>
+          </div>
+        </div>`).join('');
+    }
+  }
+
+  function applyLeaderboard(games) {
+    Object.entries(games).forEach(([key, game]) => {
+      // Add tab if missing
+      const tabsEl = document.querySelector('.lb-game-tabs');
+      if (tabsEl && !tabsEl.querySelector(`[data-game="${key}"]`)) {
+        const b = document.createElement('button');
+        b.className = 'lb-tab'; b.dataset.game = key; b.textContent = game.label;
+        b.addEventListener('click', () => {
+          document.querySelectorAll('.lb-tab').forEach(x=>x.classList.remove('active'));
+          b.classList.add('active');
+          document.querySelectorAll('.lb-board').forEach(x=>x.style.display='none');
+          const bd = document.getElementById('lb-'+key);
+          if (bd) bd.style.display = 'flex';
+        });
+        tabsEl.appendChild(b);
+      }
+      // Render board
+      let board = document.getElementById('lb-'+key);
+      if (!board) {
+        board = document.createElement('div');
+        board.className = 'lb-board'; board.id = 'lb-'+key; board.style.display = 'none';
+        document.querySelector('.lb-board')?.parentNode?.appendChild(board);
+      }
+      const entries = game.entries || [];
+      if (!entries.length) return;
+      board.innerHTML = entries.slice(0,10).map((e,i) => {
+        const cls = i===0?'gold-entry':i===1?'silver-entry':i===2?'bronze-entry':'';
+        const rc  = i===0?'r1':i===1?'r2':i===2?'r3':'other';
+        return `<div class="lb-entry ${cls}">
+          <div class="lb-rank ${rc}">${i+1}</div>
+          <div class="lb-crown" style="opacity:${i===0?1:0}">👑</div>
+          <div class="lb-name">${escHtml(e.name)}</div>
+          <div><div class="lb-score">${escHtml(String(e.score))}</div>
+          <div class="lb-meta">${escHtml(e.meta||'')}</div></div>
+        </div>`;
+      }).join('');
+    });
+  }
+
+  function escHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+  // Load live data after dashboard becomes visible
+  const _origEnter = enterBtn.onclick;
+  enterBtn.addEventListener('click', () => setTimeout(loadLiveData, 800));
 </script>
 </body>
 </html>
