@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>AstricAlex · Connecting…</title>
+  <style>
+    body {
+      margin: 0;
+      background: #0b0813;
+      font-family: 'Jost', 'Segoe UI', sans-serif;
+      display: flex; align-items: center; justify-content: center;
+      height: 100vh;
+      color: rgba(255,238,250,0.7);
+      font-size: 13px; letter-spacing: 1px;
+    }
+    p { text-align: center; }
+  </style>
+</head>
+<body>
+<p>Connecting to Twitch…</p>
+<script>
+  // This page is the OAuth redirect target for AstricAlex's stream page.
+  // It receives the token from Twitch in the URL hash, then posts it
+  // back to the opener (stream page) via postMessage and closes itself.
+
+  const hash = window.location.hash;
+  const params = {};
+  if (hash) {
+    hash.slice(1).split('&').forEach(p => {
+      const [k, v] = p.split('=');
+      params[k] = v;
+    });
+  }
+
+  const token = params['access_token'];
+  const state = params['state'];
+
+  if (token && window.opener && !window.opener.closed) {
+    window.opener.postMessage(
+      { type: 'twitch_oauth', token, state },
+      'https://astricalex.github.io'
+    );
+    window.close();
+  } else if (!token) {
+    document.querySelector('p').textContent = 'Login cancelled.';
+    setTimeout(() => window.close(), 1500);
+  } else {
+    document.querySelector('p').textContent = 'Could not reach stream page. You can close this tab.';
+  }
+</script>
+</body>
+</html>
