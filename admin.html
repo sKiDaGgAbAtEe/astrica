@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AstricAlex · Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@200;300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:       #0b0813;
+      --bg2:      #130e1f;
+      --bg3:      #1a1228;
+      --plum:     #4a1d6e;
+      --lav:      #b892d8;
+      --lav-dim:  rgba(184,146,216,0.12);
+      --lav-b:    rgba(184,146,216,0.22);
+      --rose:     #c4667a;
+      --rose-dim: rgba(196,102,122,0.15);
+      --gold:     #e8c87a;
+      --text:     rgba(255,238,250,0.92);
+      --muted:    rgba(255,220,240,0.40);
+      --faint:    rgba(255,220,240,0.12);
+      --border:   rgba(184,146,216,0.12);
+      --border2:  rgba(184,146,216,0.22);
+      --serif:    'Cormorant Garamond', Georgia, serif;
+      --sans:     'Jost', sans-serif;
+      --radius:   14px;
+    }
+
+    html, body {
+      min-height: 100vh;
+      background: var(--bg);
+      font-family: var(--sans);
+      color: var(--text);
+    }
+
+    /* ── STARFIELD ── */
+    #stars { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+    .star  { position: absolute; border-radius: 50%; background: #fff;
+             animation: twinkle var(--d,3s) ease-in-out infinite var(--dl,0s); }
+    @keyframes twinkle { 0%,100%{opacity:var(--lo,.06)} 50%{opacity:var(--hi,.5)} }
+
+    #bg-glow {
+      position: fixed; inset: 0; z-index: 0;
+      background:
+        radial-gradient(ellipse at 15% 10%, rgba(74,29,110,0.65) 0%, transparent 50%),
+        radial-gradient(ellipse at 85% 90%, rgba(196,102,122,0.28) 0%, transparent 50%);
+    }
+
+    /* ── LOGIN SCREEN ── */
+    #login-screen {
+      position: fixed; inset: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: center;
+      background: var(--bg);
+    }
+    #login-screen.hidden { display: none; }
+
+    #login-box {
+      position: relative; z-index: 1;
+      text-align: center;
+      display: flex; flex-direction: column; align-items: center; gap: 18px;
+      width: min(340px, 90vw);
+    }
+    #login-moon { font-size: 42px; animation: float 4s ease-in-out infinite;
+                  filter: drop-shadow(0 0 20px rgba(232,200,122,0.5)); }
+    @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+
+    #login-title {
+      font-family: var(--serif); font-size: 32px; font-weight: 300;
+      letter-spacing: 6px; color: #fff;
+      text-shadow: 0 0 40px rgba(184,146,216,0.4);
+    }
+    #login-title em { font-style: italic; color: var(--lav); }
+
+    #login-sub { font-size: 9px; letter-spacing: 3px; text-transform: uppercase; color: var(--muted); }
+
+    #login-form { display: flex; flex-direction: column; gap: 10px; width: 100%; }
+    #login-pw {
+      background: rgba(0,0,0,0.3); border: 1px solid var(--border2);
+      border-radius: 10px; padding: 12px 16px;
+      color: var(--text); font-family: var(--sans); font-size: 13px;
+      letter-spacing: 2px; outline: none; text-align: center;
+      transition: border-color 0.2s;
+    }
+    #login-pw:focus { border-color: rgba(184,146,216,0.5); }
+    #login-pw::placeholder { color: var(--muted); letter-spacing: 1px; }
+
+    #login-btn {
+      background: var(--lav-dim); border: 1px solid var(--lav-b);
+      color: var(--lav); font-family: var(--sans); font-size: 10px;
+      letter-spacing: 2.5px; text-transform: uppercase;
+      padding: 11px; border-radius: 10px; cursor: pointer;
+      transition: all 0.2s;
+    }
+    #login-btn:hover { background: rgba(184,146,216,0.22); }
+    #login-err { font-size: 11px; color: var(--rose); letter-spacing: 1px; min-height: 16px; }
+
+    /* ── MAIN LAYOUT ── */
+    #app {
+      position: relative; z-index: 10;
+      display: none; min-height: 100vh;
+      flex-direction: column;
+    }
+    #app.visible { display: flex; }
+
+    /* ── TOP BAR ── */
+    #topbar {
+      position: sticky; top: 0; z-index: 50;
+      display: flex; align-items: center; gap: 14px;
+      padding: 14px 24px;
+      background: rgba(11,8,19,0.85);
+      backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+    }
+    #topbar h1 {
+      font-family: var(--serif); font-size: 20px; font-weight: 300;
+      letter-spacing: 4px; color: #fff; flex: 1;
+      text-shadow: 0 0 20px rgba(184,146,216,0.3);
+    }
+    #topbar h1 em { font-style: italic; color: var(--lav); }
+    #topbar-sub { font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); }
+
+    #logout-btn {
+      background: transparent; border: 1px solid var(--border);
+      color: var(--muted); font-family: var(--sans); font-size: 9px;
+      letter-spacing: 1.5px; text-transform: uppercase;
+      padding: 5px 14px; border-radius: 20px; cursor: pointer;
+      transition: all 0.2s;
+    }
+    #logout-btn:hover { border-color: var(--rose-dim); color: var(--rose); }
+
+    /* ── EVENTSUB REGISTER BUTTON ── */
+    #eventsub-btn {
+      background: rgba(232,200,122,0.08); border: 1px solid rgba(232,200,122,0.2);
+      color: rgba(232,200,122,0.7); font-family: var(--sans); font-size: 9px;
+      letter-spacing: 1.5px; text-transform: uppercase;
+      padding: 5px 14px; border-radius: 20px; cursor: pointer;
+      transition: all 0.2s;
+    }
+    #eventsub-btn:hover { background: rgba(232,200,122,0.14); color: var(--gold); }
+
+    /* ── NAV TABS ── */
+    #nav {
+      display: flex; gap: 4px; padding: 14px 24px 0;
+      border-bottom: 1px solid var(--border);
+      overflow-x: auto; scrollbar-width: none;
+    }
+    #nav::-webkit-scrollbar { display: none; }
+    .nav-tab {
+      background: transparent; border: none; border-bottom: 2px solid transparent;
+      color: var(--muted); font-family: var(--sans); font-size: 10px;
+      letter-spacing: 2px; text-transform: uppercase;
+      padding: 8px 18px 10px; cursor: pointer;
+      transition: all 0.2s; white-space: nowrap; flex-shrink: 0;
+    }
+    .nav-tab.active { color: var(--lav); border-bottom-color: var(--lav); }
+    .nav-tab:hover:not(.active) { color: rgba(255,220,240,0.6); }
+
+    /* ── CONTENT AREA ── */
+    #content { flex: 1; padding: 28px 24px 60px; max-width: 860px; }
+    .tab-section { display: none; }
+    .tab-section.active { display: block; }
+
+    /* ── SECTION HEADER ── */
+    .sec-title {
+      font-family: var(--serif); font-size: 22px; font-weight: 300;
+      letter-spacing: 3px; color: #fff; margin-bottom: 6px;
+    }
+    .sec-title em { font-style: italic; color: var(--lav); }
+    .sec-desc { font-size: 11px; letter-spacing: 1px; color: var(--muted); margin-bottom: 24px; }
+
+    .divider {
+      height: 1px; background: linear-gradient(to right, var(--border2), transparent);
+      margin: 28px 0;
+    }
+
+    /* ── FORM ELEMENTS ── */
+    .field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
+    .field label {
+      font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: var(--muted);
+    }
+    .field input, .field textarea, .field select {
+      background: rgba(0,0,0,0.25); border: 1px solid var(--border);
+      border-radius: 10px; padding: 10px 14px;
+      color: var(--text); font-family: var(--sans); font-size: 13px;
+      outline: none; transition: border-color 0.2s; width: 100%;
+      resize: vertical;
+    }
+    .field input:focus, .field textarea:focus, .field select:focus {
+      border-color: rgba(184,146,216,0.4);
+    }
+    .field textarea { min-height: 80px; line-height: 1.6; }
+    .field select option { background: var(--bg2); }
+
+    .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    @media(max-width: 560px) { .field-row { grid-template-columns: 1fr; } }
+
+    /* ── BUTTONS ── */
+    .btn {
+      background: var(--lav-dim); border: 1px solid var(--lav-b);
+      color: var(--lav); font-family: var(--sans); font-size: 10px;
+      letter-spacing: 2px; text-transform: uppercase;
+      padding: 9px 22px; border-radius: 10px; cursor: pointer;
+      transition: all 0.2s; display: inline-flex; align-items: center; gap: 7px;
+    }
+    .btn:hover { background: rgba(184,146,216,0.22); }
+    .btn.rose {
+      background: var(--rose-dim); border-color: rgba(196,102,122,0.3); color: var(--rose);
+    }
+    .btn.rose:hover { background: rgba(196,102,122,0.25); }
+    .btn.ghost {
+      background: transparent; border-color: var(--border); color: var(--muted);
+    }
+    .btn.ghost:hover { border-color: var(--border2); color: var(--text); }
+    .btn.sm { font-size: 8px; padding: 6px 14px; }
+    .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    /* ── SAVE STATUS ── */
+    .save-status {
+      font-size: 10px; letter-spacing: 1.5px; color: var(--muted);
+      transition: opacity 0.4s; opacity: 0;
+    }
+    .save-status.show { opacity: 1; }
+    .save-status.ok   { color: #7dd4a0; }
+    .save-status.err  { color: var(--rose); }
+
+    .save-row { display: flex; align-items: center; gap: 14px; margin-top: 18px; }
+
+    /* ── CARDS (for list items) ── */
+    .item-card {
+      background: rgba(0,0,0,0.22); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 16px;
+      margin-bottom: 10px; position: relative;
+      animation: fadeIn 0.25s ease both;
+    }
+    @keyframes fadeIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:none} }
+
+    .item-card .delete-btn {
+      position: absolute; top: 12px; right: 12px;
+      background: transparent; border: 1px solid rgba(196,102,122,0.18);
+      border-radius: 8px; color: rgba(196,102,122,0.4); font-size: 11px;
+      width: 26px; height: 26px; display: flex; align-items: center; justify-content: center;
+      cursor: pointer; transition: all 0.2s;
+    }
+    .item-card .delete-btn:hover { background: var(--rose-dim); color: var(--rose); border-color: rgba(196,102,122,0.4); }
+
+    /* ── LEADERBOARD TABLE ── */
+    .lb-table { width: 100%; border-collapse: collapse; }
+    .lb-table th {
+      font-size: 8px; letter-spacing: 2px; text-transform: uppercase;
+      color: var(--muted); text-align: left; padding: 6px 10px;
+      border-bottom: 1px solid var(--border);
+    }
+    .lb-table td {
+      padding: 9px 10px; font-size: 13px;
+      border-bottom: 1px solid rgba(184,146,216,0.05);
+      vertical-align: middle;
+    }
+    .lb-table tr:last-child td { border-bottom: none; }
+    .lb-table .rank { font-family: var(--serif); font-size: 16px; width: 36px; }
+    .lb-table .r1 { color: var(--gold); }
+    .lb-table .r2 { color: #c8c8dc; }
+    .lb-table .r3 { color: #c48c50; }
+    .lb-table .score { color: var(--lav); font-family: var(--serif); font-size: 15px; }
+    .lb-table .meta  { color: var(--muted); font-size: 10px; }
+    .lb-table .del   { text-align: right; }
+
+    .auto-badge {
+      font-size: 7px; letter-spacing: 1.5px; text-transform: uppercase;
+      background: rgba(232,200,122,0.1); border: 1px solid rgba(232,200,122,0.2);
+      color: rgba(232,200,122,0.7); padding: 2px 7px; border-radius: 20px;
+      vertical-align: middle; margin-left: 6px;
+    }
+
+    .lb-game-tabs { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 18px; }
+    .lb-game-tab {
+      background: rgba(0,0,0,0.2); border: 1px solid var(--border);
+      color: var(--muted); font-family: var(--sans); font-size: 9px;
+      letter-spacing: 1.5px; text-transform: uppercase;
+      padding: 4px 12px; border-radius: 20px; cursor: pointer; transition: all 0.2s;
+    }
+    .lb-game-tab.active { background: var(--lav-dim); border-color: var(--lav-b); color: var(--lav); }
+
+    /* ── EVENT CARD ── */
+    .event-tag-input {
+      display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: 6px;
+    }
+    .tag-chip {
+      background: var(--lav-dim); border: 1px solid var(--lav-b);
+      color: var(--lav); font-size: 9px; letter-spacing: 1px;
+      padding: 3px 10px 3px 8px; border-radius: 20px;
+      display: flex; align-items: center; gap: 5px;
+    }
+    .tag-chip button {
+      background: none; border: none; color: inherit; cursor: pointer;
+      font-size: 11px; line-height: 1; opacity: 0.6; padding: 0;
+    }
+    .tag-chip button:hover { opacity: 1; }
+  </style>
+</head>
+<body>
+
+<div id="stars"></div>
+<div id="bg-glow"></div>
+
+<!-- ── LOGIN ── -->
+<div id="login-screen">
+  <div id="login-box">
+    <div id="login-moon">🌙</div>
+    <div id="login-title">Astric<em>Alex</em></div>
+    <div id="login-sub">admin portal</div>
+    <div id="login-form">
+      <input id="login-pw" type="password" placeholder="enter password" autocomplete="current-password"/>
+      <button id="login-btn">Enter ✦</button>
+      <div id="login-err"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── APP ── -->
+<div id="app">
+  <div id="topbar">
+    <div>
+      <h1>Astric<em>Alex</em></h1>
+      <div id="topbar-sub">admin portal</div>
+    </div>
+    <button id="eventsub-btn" title="Register Twitch EventSub webhooks for auto-leaderboard">⚡ Register EventSub</button>
+    <button id="logout-btn">Sign Out</button>
+  </div>
+
+  <div id="nav">
+    <button class="nav-tab active" data-tab="leaderboard">Leaderboard</button>
+    <button class="nav-tab" data-tab="events">Events</button>
+    <button class="nav-tab" data-tab="schedule">Schedule</button>
+    <button class="nav-tab" data-tab="about">About</button>
+  </div>
+
+  <div id="content">
+
+    <!-- ══ LEADERBOARD ══ -->
+    <div class="tab-section active" id="tab-leaderboard">
+      <div class="sec-title">Leader<em>board</em></div>
+      <div class="sec-desc">Cheers, gift subs, and channel points update automatically via Twitch. You can also add/edit/remove entries manually.</div>
+
+      <div class="lb-game-tabs" id="lb-tabs"></div>
+
+      <!-- Add entry form -->
+      <div class="item-card">
+        <div class="field-row">
+          <div class="field">
+            <label>Player Name</label>
+            <input id="lb-name" type="text" placeholder="username"/>
+          </div>
+          <div class="field">
+            <label>Score / Value</label>
+            <input id="lb-score" type="text" placeholder="e.g. 2840 or 1:42.33"/>
+          </div>
+        </div>
+        <div class="field">
+          <label>Note (optional)</label>
+          <input id="lb-meta" type="text" placeholder="e.g. 48 wins"/>
+        </div>
+        <button class="btn" id="lb-add-btn">✦ Add / Update Entry</button>
+      </div>
+
+      <div id="lb-entries-wrap">
+        <table class="lb-table" id="lb-table">
+          <thead><tr>
+            <th>#</th><th>Player</th><th>Score</th><th>Note</th><th></th>
+          </tr></thead>
+          <tbody id="lb-tbody"></tbody>
+        </table>
+      </div>
+
+      <div class="save-row">
+        <span class="save-status" id="lb-status"></span>
+      </div>
+    </div>
+
+    <!-- ══ EVENTS ══ -->
+    <div class="tab-section" id="tab-events">
+      <div class="sec-title">Up<em>coming Events</em></div>
+      <div class="sec-desc">Add upcoming tournaments, special streams, and one-off events. Featured events appear highlighted in your app.</div>
+
+      <button class="btn" id="add-event-btn" style="margin-bottom:18px;">+ New Event</button>
+
+      <div id="events-list"></div>
+
+      <div class="save-row">
+        <button class="btn" id="save-events-btn">Save Events</button>
+        <span class="save-status" id="events-status"></span>
+      </div>
+    </div>
+
+    <!-- ══ SCHEDULE ══ -->
+    <div class="tab-section" id="tab-schedule">
+      <div class="sec-title">Recurring <em>Schedule</em></div>
+      <div class="sec-desc">Weekly recurring streams that always show at the bottom of your Events page.</div>
+
+      <button class="btn" id="add-sched-btn" style="margin-bottom:18px;">+ Add Recurring</button>
+
+      <div id="sched-list"></div>
+
+      <div class="save-row">
+        <button class="btn" id="save-sched-btn">Save Schedule</button>
+        <span class="save-status" id="sched-status"></span>
+      </div>
+    </div>
+
+    <!-- ══ ABOUT ══ -->
+    <div class="tab-section" id="tab-about">
+      <div class="sec-title">About <em>Alex</em></div>
+      <div class="sec-desc">Update your bio, title, and social links. Changes go live immediately.</div>
+
+      <div class="field">
+        <label>Display Name</label>
+        <input id="about-name" type="text"/>
+      </div>
+      <div class="field">
+        <label>Title / Tagline</label>
+        <input id="about-title" type="text"/>
+      </div>
+      <div class="field">
+        <label>Bio</label>
+        <textarea id="about-bio" rows="5"></textarea>
+      </div>
+      <div class="field">
+        <label>Stream Schedule Description</label>
+        <textarea id="about-schedule" rows="3"></textarea>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="sec-title" style="font-size:16px;">Social <em>Links</em></div>
+      <div class="field-row">
+        <div class="field"><label>Twitch URL</label><input id="social-twitch" type="url"/></div>
+        <div class="field"><label>Twitter / X URL</label><input id="social-twitter" type="url"/></div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>Discord URL</label><input id="social-discord" type="url"/></div>
+        <div class="field"><label>TikTok URL</label><input id="social-tiktok" type="url"/></div>
+      </div>
+
+      <div class="save-row">
+        <button class="btn" id="save-about-btn">Save About</button>
+        <span class="save-status" id="about-status"></span>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /app -->
+
+<script>
+// ── CONFIG ──
+const API = 'https://cocreate-production.up.railway.app';
+
+// ── STARFIELD ──
+const sf = document.getElementById('stars');
+for (let i = 0; i < 60; i++) {
+  const s = document.createElement('div'); s.className = 'star';
+  const sz = Math.random() * 2 + 0.5;
+  Object.assign(s.style, {
+    width: sz+'px', height: sz+'px',
+    left: Math.random()*100+'%', top: Math.random()*100+'%',
+    '--d': (Math.random()*4+2).toFixed(1)+'s',
+    '--dl': (Math.random()*5).toFixed(1)+'s',
+    '--lo': (Math.random()*0.06+0.02).toFixed(2),
+    '--hi': (Math.random()*0.4+0.2).toFixed(2),
+  });
+  sf.appendChild(s);
+}
+
+// ── AUTH ──
+async function tryLogin(pw) {
+  const r = await fetch(`${API}/api/alex/admin/login`, {
+    method: 'POST', credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ password: pw })
+  });
+  return r.ok;
+}
+
+async function checkSession() {
+  try {
+    const r = await fetch(`${API}/api/alex/admin/check`, { credentials: 'include' });
+    const d = await r.json();
+    return d.authed;
+  } catch { return false; }
+}
+
+function showApp() {
+  document.getElementById('login-screen').classList.add('hidden');
+  document.getElementById('app').classList.add('visible');
+  loadAll();
+}
+
+document.getElementById('login-btn').addEventListener('click', async () => {
+  const pw  = document.getElementById('login-pw').value.trim();
+  const err = document.getElementById('login-err');
+  if (!pw) return;
+  const ok = await tryLogin(pw);
+  if (ok) { showApp(); }
+  else    { err.textContent = 'incorrect password'; setTimeout(() => err.textContent = '', 2000); }
+});
+document.getElementById('login-pw').addEventListener('keydown', e => {
+  if (e.key === 'Enter') document.getElementById('login-btn').click();
+});
+
+document.getElementById('logout-btn').addEventListener('click', async () => {
+  await fetch(`${API}/api/alex/admin/logout`, { method: 'POST', credentials: 'include' });
+  location.reload();
+});
+
+// Auto-check session on load
+checkSession().then(ok => { if (ok) showApp(); });
+
+// ── TABS ──
+document.querySelectorAll('.nav-tab').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.nav-tab').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-section').forEach(s => s.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+  });
+});
+
+// ── HELPERS ──
+function apiGet(path) {
+  return fetch(`${API}${path}`, { credentials: 'include' }).then(r => r.json());
+}
+function apiPost(path, body) {
+  return fetch(`${API}${path}`, {
+    method: 'POST', credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  }).then(r => r.json());
+}
+function apiDel(path, body) {
+  return fetch(`${API}${path}`, {
+    method: 'DELETE', credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  }).then(r => r.json());
+}
+
+function showStatus(id, ok, msg) {
+  const el = document.getElementById(id);
+  el.textContent = msg;
+  el.className = 'save-status show ' + (ok ? 'ok' : 'err');
+  setTimeout(() => el.classList.remove('show'), 3000);
+}
+
+// ══ LEADERBOARD ══════════════════════════════════════════════════════════════
+const AUTO_GAMES = ['cheers', 'gifters', 'points'];
+let lbData  = null;
+let lbGame  = 'trivia';
+
+async function loadLeaderboard() {
+  lbData = await apiGet('/api/alex/leaderboard');
+  renderLbTabs();
+  renderLbEntries();
+}
+
+function renderLbTabs() {
+  const wrap = document.getElementById('lb-tabs');
+  wrap.innerHTML = '';
+  Object.entries(lbData.games).forEach(([key, game]) => {
+    const btn = document.createElement('button');
+    btn.className = 'lb-game-tab' + (key === lbGame ? ' active' : '');
+    btn.innerHTML = game.label + (AUTO_GAMES.includes(key) ? ' <span class="auto-badge">auto</span>' : '');
+    btn.addEventListener('click', () => { lbGame = key; renderLbTabs(); renderLbEntries(); });
+    wrap.appendChild(btn);
+  });
+}
+
+function renderLbEntries() {
+  const entries = lbData.games[lbGame]?.entries || [];
+  const tbody   = document.getElementById('lb-tbody');
+  tbody.innerHTML = '';
+  entries.forEach((e, i) => {
+    const rankClass = i === 0 ? 'r1' : i === 1 ? 'r2' : i === 2 ? 'r3' : '';
+    const medal     = i === 0 ? '👑' : i === 1 ? '✦' : i === 2 ? '✧' : '';
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td class="rank ${rankClass}">${medal || (i+1)}</td>
+      <td>${escHtml(e.name)}</td>
+      <td class="score">${escHtml(String(e.score))}</td>
+      <td class="meta">${escHtml(e.meta || '')}</td>
+      <td class="del">
+        <button class="btn sm rose" data-del="${escHtml(e.name)}">✕</button>
+      </td>`;
+    tbody.appendChild(tr);
+  });
+  tbody.querySelectorAll('[data-del]').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      if (!confirm(`Remove ${btn.dataset.del}?`)) return;
+      await apiDel('/api/alex/admin/leaderboard/entry', { game: lbGame, name: btn.dataset.del });
+      await loadLeaderboard();
+      showStatus('lb-status', true, '✓ removed');
+    });
+  });
+}
+
+document.getElementById('lb-add-btn').addEventListener('click', async () => {
+  const name  = document.getElementById('lb-name').value.trim();
+  const score = document.getElementById('lb-score').value.trim();
+  const meta  = document.getElementById('lb-meta').value.trim();
+  if (!name || !score) return;
+  await apiPost('/api/alex/admin/leaderboard/entry', { game: lbGame, name, score, meta });
+  document.getElementById('lb-name').value  = '';
+  document.getElementById('lb-score').value = '';
+  document.getElementById('lb-meta').value  = '';
+  await loadLeaderboard();
+  showStatus('lb-status', true, '✓ saved');
+});
+
+// ══ EVENTS ═══════════════════════════════════════════════════════════════════
+let eventsData = [];
+
+async function loadEvents() {
+  const d  = await apiGet('/api/alex/events');
+  eventsData = d.events || [];
+  renderEvents();
+}
+
+function renderEvents() {
+  const list = document.getElementById('events-list');
+  list.innerHTML = '';
+  eventsData.forEach((ev, i) => {
+    const card = document.createElement('div');
+    card.className = 'item-card';
+    card.innerHTML = `
+      <button class="delete-btn" data-idx="${i}">✕</button>
+      <div class="field-row">
+        <div class="field"><label>Event Name</label>
+          <input type="text" data-ev="${i}" data-key="name" value="${escAttr(ev.name||'')}"/></div>
+        <div class="field"><label>Date (e.g. May 3)</label>
+          <input type="text" data-ev="${i}" data-key="date" value="${escAttr(ev.date||'')}"/></div>
+      </div>
+      <div class="field"><label>Description</label>
+        <textarea data-ev="${i}" data-key="desc">${escHtml(ev.desc||'')}</textarea></div>
+      <div class="field-row">
+        <div class="field"><label>Twitch Link (optional)</label>
+          <input type="url" data-ev="${i}" data-key="link" value="${escAttr(ev.link||'')}"/></div>
+        <div class="field"><label>Featured?</label>
+          <select data-ev="${i}" data-key="featured">
+            <option value="false" ${!ev.featured?'selected':''}>Normal</option>
+            <option value="true"  ${ev.featured?'selected':''}>Featured ✦</option>
+          </select></div>
+      </div>
+      <div class="field"><label>Tags (comma separated)</label>
+        <input type="text" data-ev="${i}" data-key="tags" value="${escAttr((ev.tags||[]).join(', '))}"/></div>`;
+    list.appendChild(card);
+  });
+
+  list.querySelectorAll('[data-ev]').forEach(el => {
+    el.addEventListener('input', () => {
+      const i   = parseInt(el.dataset.ev);
+      const key = el.dataset.key;
+      let val   = el.value;
+      if (key === 'featured') val = val === 'true';
+      if (key === 'tags')     val = val.split(',').map(t => t.trim()).filter(Boolean);
+      eventsData[i][key] = val;
+    });
+  });
+
+  list.querySelectorAll('.delete-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      eventsData.splice(parseInt(btn.dataset.idx), 1);
+      renderEvents();
+    });
+  });
+}
+
+document.getElementById('add-event-btn').addEventListener('click', () => {
+  eventsData.push({ name: '', date: '', desc: '', link: 'https://twitch.tv/astricalex', featured: false, tags: [] });
+  renderEvents();
+  document.getElementById('events-list').lastElementChild?.scrollIntoView({ behavior: 'smooth' });
+});
+
+document.getElementById('save-events-btn').addEventListener('click', async () => {
+  const r = await apiPost('/api/alex/admin/events', { events: eventsData });
+  showStatus('events-status', r.ok, r.ok ? `✓ saved ${r.count} events` : '✗ ' + r.error);
+});
+
+// ══ SCHEDULE ═════════════════════════════════════════════════════════════════
+let schedData = [];
+
+async function loadSchedule() {
+  const d  = await apiGet('/api/alex/schedule');
+  schedData = d.recurring || [];
+  renderSchedule();
+}
+
+function renderSchedule() {
+  const list = document.getElementById('sched-list');
+  list.innerHTML = '';
+  schedData.forEach((s, i) => {
+    const card = document.createElement('div');
+    card.className = 'item-card';
+    card.innerHTML = `
+      <button class="delete-btn" data-idx="${i}">✕</button>
+      <div class="field-row">
+        <div class="field"><label>Icon / Emoji</label>
+          <input type="text" data-sc="${i}" data-key="icon" value="${escAttr(s.icon||'')}"/></div>
+        <div class="field"><label>Day</label>
+          <input type="text" data-sc="${i}" data-key="day" value="${escAttr(s.day||'')}"/></div>
+      </div>
+      <div class="field"><label>Label</label>
+        <input type="text" data-sc="${i}" data-key="label" value="${escAttr(s.label||'')}"/></div>
+      <div class="field"><label>Description</label>
+        <textarea data-sc="${i}" data-key="desc">${escHtml(s.desc||'')}</textarea></div>`;
+    list.appendChild(card);
+  });
+
+  list.querySelectorAll('[data-sc]').forEach(el => {
+    el.addEventListener('input', () => {
+      schedData[parseInt(el.dataset.sc)][el.dataset.key] = el.value;
+    });
+  });
+  list.querySelectorAll('.delete-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      schedData.splice(parseInt(btn.dataset.idx), 1);
+      renderSchedule();
+    });
+  });
+}
+
+document.getElementById('add-sched-btn').addEventListener('click', () => {
+  schedData.push({ icon: '🌙', day: '', label: '', desc: '' });
+  renderSchedule();
+  document.getElementById('sched-list').lastElementChild?.scrollIntoView({ behavior: 'smooth' });
+});
+
+document.getElementById('save-sched-btn').addEventListener('click', async () => {
+  const r = await apiPost('/api/alex/admin/schedule', { recurring: schedData });
+  showStatus('sched-status', r.ok, r.ok ? '✓ saved' : '✗ ' + r.error);
+});
+
+// ══ ABOUT ════════════════════════════════════════════════════════════════════
+async function loadAbout() {
+  const d = await apiGet('/api/alex/about');
+  document.getElementById('about-name').value     = d.name     || '';
+  document.getElementById('about-title').value    = d.title    || '';
+  document.getElementById('about-bio').value      = d.bio      || '';
+  document.getElementById('about-schedule').value = d.schedule || '';
+  document.getElementById('social-twitch').value  = d.socials?.twitch   || '';
+  document.getElementById('social-twitter').value = d.socials?.twitter  || '';
+  document.getElementById('social-discord').value = d.socials?.discord  || '';
+  document.getElementById('social-tiktok').value  = d.socials?.tiktok   || '';
+}
+
+document.getElementById('save-about-btn').addEventListener('click', async () => {
+  const payload = {
+    name:     document.getElementById('about-name').value,
+    title:    document.getElementById('about-title').value,
+    bio:      document.getElementById('about-bio').value,
+    schedule: document.getElementById('about-schedule').value,
+    socials: {
+      twitch:  document.getElementById('social-twitch').value,
+      twitter: document.getElementById('social-twitter').value,
+      discord: document.getElementById('social-discord').value,
+      tiktok:  document.getElementById('social-tiktok').value,
+    }
+  };
+  const r = await apiPost('/api/alex/admin/about', payload);
+  showStatus('about-status', r.ok, r.ok ? '✓ saved' : '✗ ' + r.error);
+});
+
+// ══ EVENTSUB REGISTER ════════════════════════════════════════════════════════
+document.getElementById('eventsub-btn').addEventListener('click', async () => {
+  if (!confirm('Register Twitch EventSub webhooks for channel points, gift subs, and cheers?\n\nOnly needs to be done once.')) return;
+  const btn = document.getElementById('eventsub-btn');
+  btn.disabled = true; btn.textContent = 'Registering…';
+  try {
+    const r = await apiPost('/api/alex/admin/eventsub/register', {});
+    if (r.ok) {
+      alert('✓ EventSub webhooks registered!\n\n' + r.results.map(x => `${x.type}: ${x.status}`).join('\n'));
+    } else {
+      alert('Error: ' + r.error);
+    }
+  } catch(e) { alert('Network error: ' + e.message); }
+  finally { btn.disabled = false; btn.textContent = '⚡ Register EventSub'; }
+});
+
+// ── UTILS ──
+function escHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function escAttr(s) { return String(s).replace(/"/g,'&quot;'); }
+
+// ── LOAD ALL ──
+function loadAll() {
+  loadLeaderboard();
+  loadEvents();
+  loadSchedule();
+  loadAbout();
+}
+</script>
+</body>
+</html>
