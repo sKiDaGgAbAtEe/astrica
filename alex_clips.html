@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <title>AstricAlex · Clips</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@200;300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #0b0813;
+      --gold:      rgba(232,200,122,1);
+      --gold-dim:  rgba(232,200,122,0.15);
+      --gold-glow: rgba(232,200,122,0.32);
+      --plum:      rgba(74,29,110,0.55);
+      --glass:     rgba(11,8,19,0.80);
+      --border:    rgba(184,146,216,0.10);
+      --border2:   rgba(184,146,216,0.18);
+      --text:      rgba(255,238,250,0.90);
+      --muted:     rgba(255,220,240,0.38);
+      --scroll:    rgba(184,146,216,0.08);
+      --lav:       #b892d8;
+      --rose:      rgba(196,102,122,0.85);
+    }
+
+    html, body {
+      width: 100%; height: 100%;
+      background: var(--bg);
+      font-family: 'Jost', sans-serif;
+      overflow: hidden; color: var(--text);
+    }
+
+    #bg {
+      position: fixed; inset: 0; z-index: 0;
+      background: radial-gradient(ellipse at 30% 20%, #2a0845 0%, #0d0618 40%, #0b0813 70%, #18051a 100%);
+    }
+    #bg::before {
+      content: ''; position: absolute; inset: 0;
+      background: radial-gradient(ellipse at 65% 75%, rgba(196,102,122,0.22) 0%, transparent 55%);
+    }
+    #bg::after {
+      content: ''; position: absolute; inset: 0;
+      background: radial-gradient(ellipse at 25% 50%, rgba(74,29,110,0.35) 0%, transparent 60%);
+    }
+
+    #root {
+      position: fixed; inset: 0; z-index: 10;
+      display: flex; flex-direction: column;
+    }
+
+    /* ── HEADER ── */
+    #header {
+      display: flex; align-items: center; gap: 14px;
+      padding: 14px 20px 10px; flex-shrink: 0;
+      border-bottom: 1px solid var(--border);
+      background: rgba(11,8,19,0.65);
+      backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+    }
+
+    #back-btn {
+      background: rgba(0,0,0,0.2); border: 1px solid rgba(184,146,216,0.12);
+      color: var(--muted); font-family: 'Jost', sans-serif;
+      font-size: 9px; letter-spacing: 1.6px; text-transform: uppercase;
+      padding: 4px 12px; border-radius: 20px; cursor: pointer;
+      transition: all 0.2s; flex-shrink: 0;
+    }
+    #back-btn:hover { background: rgba(184,146,216,0.1); color: var(--lav); }
+
+    #header-title {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: clamp(15px, 3vw, 20px);
+      font-weight: 300; letter-spacing: 5px;
+      font-style: italic; color: #fff;
+      text-shadow: 0 0 22px rgba(184,146,216,0.4); flex: 1;
+    }
+
+    #clip-count {
+      font-size: 9px; letter-spacing: 2px; text-transform: uppercase;
+      color: var(--muted); flex-shrink: 0;
+    }
+
+    /* ── SORT TOGGLE ── */
+    #sort-toggle {
+      display: flex; background: rgba(0,0,0,0.25); border: 1px solid var(--border);
+      border-radius: 20px; padding: 2px; gap: 2px; flex-shrink: 0;
+    }
+    .sort-btn {
+      background: transparent; border: none; color: var(--muted);
+      font-family: 'Jost', sans-serif; font-size: 8px;
+      letter-spacing: 1.5px; text-transform: uppercase;
+      padding: 3px 10px; border-radius: 18px; cursor: pointer;
+      transition: all 0.2s; white-space: nowrap;
+    }
+    .sort-btn.active {
+      background: rgba(184,146,216,0.18);
+      color: var(--lav);
+      box-shadow: 0 0 8px rgba(184,146,216,0.1);
+    }
+    .sort-btn:hover:not(.active) { color: rgba(255,220,240,0.6); }
+
+    /* ── GRID WRAP ── */
+    #grid-wrap {
+      flex: 1; overflow-y: auto;
+      padding: 16px 20px 20px;
+      scrollbar-width: thin; scrollbar-color: var(--scroll) transparent;
+    }
+    #grid-wrap::-webkit-scrollbar { width: 2px; }
+    #grid-wrap::-webkit-scrollbar-thumb { background: var(--scroll); border-radius: 4px; }
+
+    /* ── LOADING / EMPTY / ERROR ── */
+    #loading-state, #empty-state, #error-state {
+      display: flex; flex-direction: column; align-items: center;
+      justify-content: center; gap: 12px; min-height: 220px;
+    }
+    .loading-dots { display: flex; gap: 6px; }
+    .loading-dot  {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--lav); opacity: 0.4;
+      animation: ldot 1.2s ease-in-out infinite;
+    }
+    .loading-dot:nth-child(2) { animation-delay: 0.2s; }
+    .loading-dot:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes ldot { 0%,60%,100%{opacity:0.15;transform:scale(0.8)} 30%{opacity:0.9;transform:scale(1.1)} }
+    .state-text  { font-size: 10px; letter-spacing: 2.5px; text-transform: uppercase; color: var(--muted); }
+    .state-icon  { font-size: 32px; opacity: 0.4; }
+
+    /* ── GRID ── */
+    #clips-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 14px;
+    }
+
+    .clip-card {
+      border-radius: 12px; overflow: hidden;
+      border: 1px solid var(--border);
+      background: rgba(0,0,0,0.28);
+      cursor: pointer;
+      transition: transform 0.18s ease, border-color 0.2s, box-shadow 0.2s;
+      animation: cardIn 0.35s ease both;
+    }
+    .clip-card:hover {
+      transform: translateY(-3px);
+      border-color: rgba(184,146,216,0.28);
+      box-shadow: 0 8px 28px rgba(0,0,0,0.4);
+    }
+    @keyframes cardIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:none} }
+
+    .clip-thumb {
+      width: 100%; aspect-ratio: 16/9; object-fit: cover;
+      display: block; background: #1a0d28;
+    }
+
+    .clip-info { padding: 8px 10px 10px; }
+    .clip-title {
+      font-size: 11.5px; font-weight: 400; line-height: 1.4;
+      margin-bottom: 5px;
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+    }
+    .clip-meta {
+      display: flex; justify-content: space-between;
+      font-size: 9px; letter-spacing: 0.5px; color: var(--muted);
+    }
+    .clip-views { color: var(--lav); }
+    .clip-play-icon {
+      position: absolute; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(0,0,0,0); transition: background 0.2s;
+      border-radius: 12px 12px 0 0;
+    }
+    .clip-thumb-wrap { position: relative; }
+    .clip-play-icon span {
+      width: 36px; height: 36px; border-radius: 50%;
+      background: rgba(0,0,0,0.55); border: 1.5px solid rgba(255,255,255,0.3);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; opacity: 0; transition: opacity 0.2s;
+      color: #fff;
+    }
+    .clip-card:hover .clip-play-icon span { opacity: 1; }
+    .clip-card:hover .clip-play-icon { background: rgba(0,0,0,0.15); }
+
+    /* ── OVERLAY ── */
+    #overlay {
+      position: fixed; inset: 0; z-index: 100;
+      background: rgba(0,0,0,0.88);
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0; pointer-events: none; transition: opacity 0.25s ease;
+      backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+      padding: 20px;
+    }
+    #overlay.open { opacity: 1; pointer-events: all; }
+
+    #overlay-inner {
+      width: min(92vw, 960px);
+      display: flex; flex-direction: column; gap: 12px;
+      transform: scale(0.96); transition: transform 0.25s ease;
+    }
+    #overlay.open #overlay-inner { transform: scale(1); }
+
+    #overlay-header {
+      display: flex; align-items: flex-start; justify-content: space-between; gap: 12px;
+    }
+    #overlay-title {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: clamp(13px, 2.5vw, 18px);
+      font-weight: 300; letter-spacing: 2px; font-style: italic;
+      color: #fff; line-height: 1.3; flex: 1;
+      text-shadow: 0 0 16px rgba(184,146,216,0.4);
+    }
+    #overlay-close {
+      background: rgba(184,146,216,0.08); border: 1px solid rgba(184,146,216,0.18);
+      border-radius: 50%; width: 32px; height: 32px; flex-shrink: 0;
+      color: var(--muted); font-size: 16px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: background 0.2s, color 0.2s;
+    }
+    #overlay-close:hover { background: rgba(184,146,216,0.18); color: #fff; }
+
+    #overlay-player {
+      width: 100%; aspect-ratio: 16/9;
+      border-radius: 12px; overflow: hidden;
+      border: 1px solid var(--border2); background: #000;
+    }
+    #overlay-player iframe { width: 100%; height: 100%; border: none; display: block; }
+
+    #overlay-meta {
+      display: flex; gap: 16px; align-items: center; flex-wrap: wrap;
+    }
+    .om-stat {
+      font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase;
+      color: var(--muted);
+    }
+    .om-stat span { color: var(--lav); margin-left: 5px; }
+
+    #overlay-twitch-link {
+      margin-left: auto;
+      background: rgba(74,29,110,0.22);
+      border: 1px solid rgba(184,146,216,0.28); border-radius: 20px;
+      color: var(--lav); text-decoration: none;
+      font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase;
+      padding: 5px 14px; transition: all 0.2s;
+    }
+    #overlay-twitch-link:hover { background: rgba(184,146,216,0.18); color: #fff; }
+
+    @media (max-width: 600px) {
+      #clips-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px; }
+      #grid-wrap { padding: 12px 14px 20px; }
+      #header { flex-wrap: wrap; gap: 8px; }
+    }
+  </style>
+</head>
+<body>
+<div id="bg"></div>
+
+<div id="root">
+  <div id="header">
+    <button id="back-btn" onclick="window.parent.postMessage({type:'alex-nav',tab:'home'},'*')">‹ Back</button>
+    <div id="header-title">Clips</div>
+    <span id="clip-count"></span>
+    <div id="sort-toggle">
+      <button class="sort-btn active" data-sort="views">Most Viewed</button>
+      <button class="sort-btn" data-sort="recent">Recent</button>
+    </div>
+  </div>
+
+  <div id="grid-wrap">
+    <div id="loading-state">
+      <div class="loading-dots">
+        <div class="loading-dot"></div>
+        <div class="loading-dot"></div>
+        <div class="loading-dot"></div>
+      </div>
+      <div class="state-text">Loading clips</div>
+    </div>
+    <div id="empty-state" style="display:none">
+      <div class="state-icon">🎞</div>
+      <div class="state-text">No clips found</div>
+    </div>
+    <div id="error-state" style="display:none">
+      <div class="state-icon">⚠</div>
+      <div class="state-text" id="error-msg">Could not load clips</div>
+    </div>
+    <div id="clips-grid"></div>
+  </div>
+</div>
+
+<!-- OVERLAY PLAYER -->
+<div id="overlay">
+  <div id="overlay-inner">
+    <div id="overlay-header">
+      <div id="overlay-title"></div>
+      <button id="overlay-close">✕</button>
+    </div>
+    <div id="overlay-player">
+      <iframe id="overlay-iframe" src="" allowfullscreen allow="autoplay"></iframe>
+    </div>
+    <div id="overlay-meta">
+      <div class="om-stat">Views<span id="om-views"></span></div>
+      <div class="om-stat">Date<span id="om-date"></span></div>
+      <div class="om-stat">Creator<span id="om-creator"></span></div>
+      <a id="overlay-twitch-link" href="#" target="_blank" rel="noopener">Watch on Twitch ↗</a>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── CONFIG ──
+// Alex needs her own Railway backend OR you can proxy through yours.
+// Replace API_BASE with her backend URL once set up.
+// If sharing your CoCreate server, add an /api/clips-alex endpoint there.
+const API_BASE = 'https://cocreate-production.up.railway.app';
+const CHANNEL  = 'astricalex';
+const PARENT   = 'skidaggabatee.github.io';
+
+let allClips = [];
+let sortMode = 'views';
+
+/* ── FETCH ── */
+async function fetchClips() {
+  try {
+    // Uses /api/clips endpoint — the server reads TWITCH_BOT_CHANNEL env var.
+    // For Alex: either set up her own Railway backend, or add a ?channel= param
+    // to your shared server. Adjust the URL below accordingly.
+    const res  = await fetch(`${API_BASE}/api/clips?channel=${CHANNEL}`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    allClips   = data.clips || [];
+    render();
+  } catch(err) {
+    document.getElementById('loading-state').style.display = 'none';
+    document.getElementById('error-state').style.display  = 'flex';
+    document.getElementById('error-msg').textContent      = err.message || 'Could not load clips';
+  }
+}
+
+/* ── SORT & RENDER ── */
+function sorted() {
+  const c = [...allClips];
+  if (sortMode === 'views') c.sort((a,b) => b.view_count - a.view_count);
+  else                      c.sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
+  return c;
+}
+
+function formatViews(n) {
+  if (n >= 1_000_000) return (n/1_000_000).toFixed(1) + 'M';
+  if (n >= 1_000)     return (n/1_000).toFixed(1) + 'K';
+  return n.toString();
+}
+
+function formatDate(iso) {
+  return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
+function render() {
+  const clips = sorted();
+  document.getElementById('loading-state').style.display = 'none';
+  const grid = document.getElementById('clips-grid');
+  grid.innerHTML = '';
+
+  if (!clips.length) {
+    document.getElementById('empty-state').style.display = 'flex'; return;
+  }
+
+  document.getElementById('clip-count').textContent = `${clips.length} clips`;
+
+  clips.forEach((clip, i) => {
+    const card = document.createElement('div');
+    card.className = 'clip-card';
+    card.style.animationDelay = Math.min(i * 0.04, 0.6) + 's';
+    card.innerHTML = `
+      <div class="clip-thumb-wrap">
+        <img class="clip-thumb" src="${clip.thumbnail_url || ''}" alt="${clip.title}" loading="lazy" />
+        <div class="clip-play-icon"><span>▶</span></div>
+      </div>
+      <div class="clip-info">
+        <div class="clip-title">${escHtml(clip.title)}</div>
+        <div class="clip-meta">
+          <span class="clip-views">✦ ${formatViews(clip.view_count)}</span>
+          <span>${formatDate(clip.created_at)}</span>
+        </div>
+      </div>`;
+    card.addEventListener('click', () => openOverlay(clip));
+    grid.appendChild(card);
+  });
+}
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+/* ── SORT TOGGLE ── */
+document.querySelectorAll('.sort-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    sortMode = btn.dataset.sort;
+    render();
+  });
+});
+
+/* ── OVERLAY ── */
+const overlay    = document.getElementById('overlay');
+const overlayIframe = document.getElementById('overlay-iframe');
+
+function openOverlay(clip) {
+  document.getElementById('overlay-title').textContent   = clip.title;
+  document.getElementById('om-views').textContent        = formatViews(clip.view_count);
+  document.getElementById('om-date').textContent         = formatDate(clip.created_at);
+  document.getElementById('om-creator').textContent      = clip.creator_name || '—';
+  document.getElementById('overlay-twitch-link').href    = clip.url;
+
+  // Twitch clip embed URL
+  const embedUrl = `https://clips.twitch.tv/embed?clip=${clip.id}&parent=${PARENT}&autoplay=true`;
+  overlayIframe.src = embedUrl;
+
+  overlay.classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeOverlay() {
+  overlay.classList.remove('open');
+  overlayIframe.src = '';
+  document.body.style.overflow = '';
+}
+
+document.getElementById('overlay-close').addEventListener('click', closeOverlay);
+overlay.addEventListener('click', e => { if (e.target === overlay) closeOverlay(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeOverlay(); });
+
+/* ── INIT ── */
+fetchClips();
+</script>
+</body>
+</html>
