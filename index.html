@@ -299,6 +299,19 @@
     .cards-panel::-webkit-scrollbar { width: 2px; }
     .cards-panel::-webkit-scrollbar-thumb { background: rgba(184,146,216,0.1); border-radius: 4px; }
 
+    /* ── TWITCH PILL ── */
+    .twitch-pill {
+      display: inline-flex; align-items: center; gap: 7px;
+      text-decoration: none;
+      background: rgba(100,20,140,0.25);
+      border: 1px solid rgba(184,146,216,0.20);
+      color: rgba(200,170,235,0.75);
+      font-size: 10px; letter-spacing: 1.5px;
+      padding: 6px 16px; border-radius: 20px;
+      transition: all 0.2s; margin-bottom: 4px;
+    }
+    .twitch-pill:hover { background: rgba(184,146,216,0.15); color: var(--lavender); border-color: rgba(184,146,216,0.38); }
+
     /* ── PILL CARDS ── */
     .fairy-card {
       width: 280px;
@@ -623,7 +636,7 @@
 <div class="deco-moon" id="moon1">🌙</div>
 <div class="deco-moon" id="moon2">✦</div>
 
-<audio id="ambient" src="/astrica/bg.mp3" loop preload="auto"></audio>
+<audio id="ambient" src="bg.mp3" loop preload="auto"></audio>
 
 <!-- ═══ LANDING ═══ -->
 <div id="landing">
@@ -668,15 +681,8 @@
     <!-- ── HOME ── -->
     <div class="cards-panel active" id="panel-home">
 
-      <a class="fairy-card" href="https://twitch.tv/astricalex" target="_blank" rel="noopener"
-         style="background:rgba(100,20,140,0.45);">
-        <div class="card-icon" style="background:rgba(120,40,180,0.35);">📺</div>
-        <div class="card-text">
-          <div class="card-title">Watch Live</div>
-          <div class="card-sub">twitch.tv/astricalex</div>
-        </div>
-        <div class="live-pill-inline" id="home-live" style="display:none;background:#c42050;color:#fff;font-size:7px;letter-spacing:1.8px;padding:2px 7px;border-radius:20px;text-transform:uppercase;animation:pulse 1.5s infinite;flex-shrink:0;">LIVE</div>
-        <div class="card-arrow">›</div>
+      <a class="twitch-pill" href="https://twitch.tv/astricalex" target="_blank" rel="noopener">
+        <span>📺</span> twitch.tv/astricalex
       </a>
 
       <div class="fairy-card" data-open="stream"
@@ -738,7 +744,7 @@
         <span class="iframe-label">live stream</span>
       </div>
       <div class="iframe-wrap">
-        <iframe src="/astrica/app/stream/stream.html" title="AstricAlex Live" allow="autoplay; fullscreen" loading="lazy"></iframe>
+        <iframe src="stream.html" title="AstricAlex Live" allow="autoplay; fullscreen"></iframe>
       </div>
     </div>
 
@@ -1072,7 +1078,7 @@
         <span class="iframe-label">clips</span>
       </div>
       <div class="iframe-wrap">
-        <iframe src="/astrica/app/clips/clips.html" title="AstricAlex Clips" allow="autoplay; fullscreen" loading="lazy"></iframe>
+        <iframe src="clips.html" title="AstricAlex Clips" allow="autoplay; fullscreen"></iframe>
       </div>
     </div>
 
