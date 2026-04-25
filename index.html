@@ -49,7 +49,6 @@
       min-height: 100vh;
       overflow: hidden;
       isolation: isolate;
-      background: url('bg.png') center top / 100% 100% no-repeat;
     }
 
     /* Full-viewport blown-up backdrop — stays behind everything */
@@ -62,9 +61,16 @@
       pointer-events: none;
     }
 
+    /* Contained bg inside the shell — sits below all overlays */
+    #shell-bg {
+      position: absolute; inset: 0; z-index: 0;
+      background: url('bg.png') center top / 100% 100% no-repeat;
+      pointer-events: none;
+    }
+
     /* ── STARFIELD ── */
     #starfield {
-      position: absolute; inset: 0; z-index: 1;
+      position: absolute; inset: 0; z-index: 2;
       pointer-events: none;
       overflow: hidden;
     }
@@ -81,7 +87,7 @@
 
     /* ── BG GRADIENT ── */
     #bg-grad {
-      position: absolute; inset: 0; z-index: 1;
+      position: absolute; inset: 0; z-index: 2;
       background:
         radial-gradient(ellipse at 20% 10%, rgba(74,29,110,0.45) 0%, transparent 55%),
         radial-gradient(ellipse at 80% 85%, rgba(196,102,122,0.20) 0%, transparent 50%),
@@ -90,7 +96,7 @@
 
     /* ── OVERLAY VIGNETTE ── */
     #vignette {
-      position: absolute; inset: 0; z-index: 1;
+      position: absolute; inset: 0; z-index: 2;
       background: radial-gradient(ellipse at 50% 50%, transparent 40%, rgba(0,0,0,0.55) 100%);
     }
 
@@ -98,7 +104,7 @@
     .deco-moon {
       position: absolute;
       pointer-events: none;
-      z-index: 0;
+      z-index: 2;
       opacity: 0.06;
       font-size: 160px;
       user-select: none;
@@ -945,6 +951,7 @@
 <!-- STARFIELD -->
 <div id="app-shell">
 
+<div id="shell-bg"></div>
 <div id="starfield"></div>
 <div id="bg-grad"></div>
 <div id="vignette"></div>
