@@ -373,7 +373,7 @@
       -webkit-backdrop-filter: blur(12px) saturate(1.2);
       flex-shrink: 0;
       animation: fadeUp 0.5s ease both;
-      opacity: 0.82;
+      opacity: 0.95;
     }
     .fairy-card:hover { transform: scale(1.015); box-shadow: 0 4px 24px rgba(184,146,216,0.10); opacity: 1; }
     .fairy-card:active { transform: scale(0.98); opacity: 0.7; }
@@ -1874,7 +1874,19 @@
   // Load live data after dashboard becomes visible
   enterBtn.addEventListener('click', () => {
     setTimeout(loadLiveData, 800);
-    setTimeout(tryRestoreSession, 600);
+    setTimeout(tryRestoreSession, 100);
+  });
+
+  // Also try to restore session on page load (for users who refresh while logged in)
+  tryRestoreSession().then(() => {
+    // If already logged in, skip the landing screen entirely
+    if (_currentUser) {
+      landing.style.display = 'none';
+      dashboard.classList.add('visible');
+      topbar.classList.add('show');
+      tabNav.classList.add('show');
+      setTimeout(loadLiveData, 200);
+    }
   });
 </script>
 
