@@ -1214,6 +1214,19 @@
   </div><!-- /panels -->
 </div><!-- /dashboard -->
 
+
+<!-- ART LIGHTBOX -->
+<div id="art-lightbox">
+  <button id="art-lightbox-close">✕</button>
+  <div id="art-lightbox-inner">
+    <img id="art-lightbox-img" src="" alt=""/>
+    <div id="art-lightbox-meta">
+      <div id="art-lightbox-title"></div>
+      <div id="art-lightbox-by"></div>
+    </div>
+  </div>
+</div>
+
 <script>
   // ── STARFIELD GENERATION ──
   const sf = document.getElementById('starfield');
@@ -1739,18 +1752,6 @@
     setTimeout(loadLiveData, 800);
     setTimeout(tryRestoreSession, 600);
   });
-<!-- ART LIGHTBOX — must be before </script> so DOM exists when script runs -->
-<div id="art-lightbox">
-  <button id="art-lightbox-close">✕</button>
-  <div id="art-lightbox-inner">
-    <img id="art-lightbox-img" src="" alt=""/>
-    <div id="art-lightbox-meta">
-      <div id="art-lightbox-title"></div>
-      <div id="art-lightbox-by"></div>
-    </div>
-  </div>
-</div>
-
 </script>
 
 </body>
