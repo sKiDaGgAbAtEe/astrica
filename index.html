@@ -211,13 +211,31 @@
       display: flex; align-items: center; gap: 10px;
     }
 
+    #vol-wrap {
+      display: flex; align-items: center; gap: 6px; flex-shrink: 0;
+    }
     #vol-btn {
       background: rgba(0,0,0,0.18); border: 1px solid rgba(184,146,216,0.12);
-      color: var(--muted); width: 30px; height: 30px; border-radius: 50%;
-      cursor: pointer; font-size: 13px; display: flex; align-items: center;
+      color: var(--muted); width: 28px; height: 28px; border-radius: 50%;
+      cursor: pointer; font-size: 12px; display: flex; align-items: center;
       justify-content: center; transition: background 0.2s, color 0.2s; flex-shrink: 0;
     }
     #vol-btn:hover { background: rgba(184,146,216,0.1); color: var(--lavender); }
+    #vol-slider {
+      -webkit-appearance: none; appearance: none;
+      width: 60px; height: 3px; border-radius: 2px; outline: none; cursor: pointer;
+      background: linear-gradient(to right, rgba(184,146,216,0.6) 0%, rgba(184,146,216,0.6) 50%, rgba(255,255,255,0.1) 50%);
+      flex-shrink: 0;
+    }
+    #vol-slider::-webkit-slider-thumb {
+      -webkit-appearance: none; width: 11px; height: 11px;
+      border-radius: 50%; background: var(--lavender); cursor: pointer;
+      border: none; box-shadow: 0 0 6px rgba(184,146,216,0.4);
+    }
+    #vol-slider::-moz-range-thumb {
+      width: 11px; height: 11px; border-radius: 50%;
+      background: var(--lavender); cursor: pointer; border: none;
+    }
 
     .live-dot {
       display: flex; align-items: center; gap: 6px;
@@ -882,7 +900,10 @@
       <div class="tagline">☽ &nbsp; fairy of the celestial realm &nbsp; ☾</div>
     </div>
     <div id="topbar-right">
-      <button id="vol-btn" title="Toggle mute">🔊</button>
+      <div id="vol-wrap">
+        <button id="vol-btn" title="Toggle mute">🔊</button>
+        <input id="vol-slider" type="range" min="0" max="1" step="0.01" value="0.03" title="Volume"/>
+      </div>
       <div id="user-area">
         <button id="twitch-login-btn">Sign in with Twitch</button>
         <div id="user-avatar-wrap">
@@ -1225,7 +1246,7 @@
   const volBtn    = document.getElementById('vol-btn');
   const audio     = document.getElementById('ambient');
 
-  audio.volume = 0.06;
+  audio.volume = 0.03;
   let muted = false;
 
   enterBtn.addEventListener('click', () => {
@@ -1241,10 +1262,26 @@
     }, 1600);
   });
 
+  const volSlider = document.getElementById('vol-slider');
+
+  function updateSliderTrack() {
+    const pct = muted ? 0 : (audio.volume * 100);
+    volSlider.style.background = `linear-gradient(to right, rgba(184,146,216,0.6) 0%, rgba(184,146,216,0.6) ${pct}%, rgba(255,255,255,0.1) ${pct}%)`;
+  }
+
   volBtn.addEventListener('click', () => {
     muted = !muted;
     audio.muted = muted;
     volBtn.textContent = muted ? '🔇' : '🔊';
+    updateSliderTrack();
+  });
+
+  volSlider.addEventListener('input', () => {
+    audio.volume = parseFloat(volSlider.value);
+    audio.muted  = false;
+    muted        = false;
+    volBtn.textContent = audio.volume === 0 ? '🔇' : '🔊';
+    updateSliderTrack();
   });
 
   // ── TAB ROUTING ──
