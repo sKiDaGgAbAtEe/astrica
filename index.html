@@ -954,6 +954,8 @@
     }
 
   </style>
+  <!-- Discord Embedded App SDK -->
+  <script src="https://cdn.jsdelivr.net/npm/@discord/embedded-app-sdk@1.2.0/output/discord-embedded-app-sdk.min.js"></script>
 </head>
 <body>
 
@@ -1186,7 +1188,7 @@
         <span class="iframe-label">clips</span>
       </div>
       <div class="iframe-wrap">
-        <iframe src="alex_clips.html" title="AstricAlex Clips" allow="autoplay; fullscreen"></iframe>
+        <iframe src="astrica_clips.html" title="AstricAlex Clips" allow="autoplay; fullscreen"></iframe>
       </div>
     </div>
 
@@ -1502,16 +1504,67 @@
   }
 
   // ── LIVE DATA LOADER ──
-  const API = 'https://cocreate-production.up.railway.app';
+  // ── DISCORD ACTIVITY DETECTION ──────────────────────────────────────────────
+  const DISCORD_CLIENT_ID = '1497433793252823123';
+  const IN_DISCORD = window.location !== window.parent.location
+                     || navigator.userAgent.includes('Electron')
+                     || window.location.hostname.includes('discordsays.com');
+
+  // API base — in Discord all requests go through /.proxy/api proxy path mapping
+  const API = IN_DISCORD
+    ? '' // relative URLs — Discord proxy handles routing via URL mappings
+    : 'https://cocreate-production.up.railway.app';
+
+  // In Discord, /api/... routes to Railway via the proxy path mapping
+  // On GitHub Pages, full URL is used as normal
+  function apiUrl(path) {
+    return IN_DISCORD ? path : API + path;
+  }
+
+  let discordSdk  = null;
+  let discordUser = null;
+
+  async function initDiscord() {
+    if (!IN_DISCORD || !window.DiscordSDK) return;
+    try {
+      discordSdk = new window.DiscordSDK(DISCORD_CLIENT_ID);
+      await discordSdk.ready();
+      console.log('[Discord] SDK ready');
+
+      // Authorize with Discord — get access code
+      const { code } = await discordSdk.commands.authorize({
+        client_id: DISCORD_CLIENT_ID,
+        response_type: 'code',
+        state: '',
+        prompt: 'none',
+        scope: ['identify'],
+      });
+
+      // Exchange code for token via your server
+      const r = await fetch(apiUrl('/api/alex/auth/discord'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code })
+      });
+      const d = await r.json();
+      if (d.ok) {
+        saveUserToken(d.session_token);
+        setLoggedInUI(d.user, d.streak || { current: 0 }, d.checked_in_today || false);
+        console.log('[Discord] Authenticated as', d.user.display_name);
+      }
+    } catch(e) {
+      console.warn('[Discord] Init failed:', e.message);
+    }
+  }
 
   async function loadLiveData() {
     try {
       const [about, events, schedule, lb, fanart] = await Promise.all([
-        fetch(`${API}/api/alex/about`).then(r=>r.json()),
-        fetch(`${API}/api/alex/events`).then(r=>r.json()),
-        fetch(`${API}/api/alex/schedule`).then(r=>r.json()),
-        fetch(`${API}/api/alex/leaderboard`).then(r=>r.json()),
-        fetch(`${API}/api/alex/fanart`).then(r=>r.json()).catch(()=>({art:[]})),
+        fetch(apiUrl('/api/alex/about')).then(r=>r.json()),
+        fetch(apiUrl('/api/alex/events')).then(r=>r.json()),
+        fetch(apiUrl('/api/alex/schedule')).then(r=>r.json()),
+        fetch(apiUrl('/api/alex/leaderboard')).then(r=>r.json()),
+        fetch(apiUrl('/api/alex/fanart')).then(r=>r.json()).catch(()=>({art:[]})),
       ]);
       applyAbout(about);
       applyEvents(events.events || [], schedule.recurring || []);
@@ -1709,7 +1762,7 @@
       formData.append('title',  title);
       formData.append('image',  file);
 
-      const r = await fetch(`${API}/api/alex/fanart/submit`, { method: 'POST', body: formData });
+      const r = await fetch(apiUrl('/api/alex/fanart/submit'), { method: 'POST', body: formData });
       const d = await r.json();
       if (d.ok) {
         stat.textContent = '✦ Sent! Alex will see it soon.'; stat.className = 'fa-status ok';
@@ -1788,7 +1841,7 @@
     const token = getUserToken();
     if (!token) return;
     try {
-      const r = await fetch(`${API}/api/alex/auth/me`, {
+      const r = await fetch(apiUrl('/api/alex/auth/me'), {
         headers: { 'X-Alex-User': token }
       });
       if (!r.ok) { clearUserToken(); return; }
@@ -1812,7 +1865,7 @@
   document.getElementById('twitch-login-btn').addEventListener('click', async () => {
     try {
       // Fetch client ID from server
-      const ciRes    = await fetch(`${API}/api/twitch-client-id`);
+      const ciRes    = await fetch(apiUrl('/api/twitch-client-id'));
       const { client_id } = await ciRes.json();
       const redirectUri  = encodeURIComponent('https://skidaggabatee.github.io/astrica/alex_twitch_callback.html');
       const state        = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2);
@@ -1829,7 +1882,7 @@
         if (!twitchToken) return;
 
         // Exchange Twitch token for app session
-        const r = await fetch(`${API}/api/alex/auth/twitch`, {
+        const r = await fetch(apiUrl('/api/alex/auth/twitch'), {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ twitch_token: twitchToken })
@@ -1854,7 +1907,7 @@
     const btn = document.getElementById('checkin-btn');
     btn.disabled = true;
     try {
-      const r = await fetch(`${API}/api/alex/checkin`, {
+      const r = await fetch(apiUrl('/api/alex/checkin'), {
         method: 'POST', headers: { 'X-Alex-User': token }
       });
       const d = await r.json();
@@ -1871,11 +1924,23 @@
     } catch(e) { btn.disabled = false; }
   });
 
+  // Init Discord if inside Discord Activity
+  initDiscord();
+
   // Load live data after dashboard becomes visible
   enterBtn.addEventListener('click', () => {
     setTimeout(loadLiveData, 800);
     setTimeout(tryRestoreSession, 100);
   });
+
+  // In Discord — skip landing entirely, Discord handles auth
+  if (IN_DISCORD) {
+    landing.style.display = 'none';
+    dashboard.classList.add('visible');
+    topbar.classList.add('show');
+    tabNav.classList.add('show');
+    setTimeout(loadLiveData, 500);
+  }
 
   // Also try to restore session on page load (for users who refresh while logged in)
   tryRestoreSession().then(() => {
