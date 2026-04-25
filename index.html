@@ -334,8 +334,8 @@
     .cards-panel {
       position: absolute; inset: 0;
       display: flex; flex-direction: column;
-      align-items: flex-start; gap: 9px;
-      padding: 0 18px 80px;
+      align-items: flex-start; gap: 5px;
+      padding: 0 18px 40px;
       overflow-y: auto; scrollbar-width: thin;
       scrollbar-color: rgba(184,146,216,0.1) transparent;
       opacity: 0; pointer-events: none;
@@ -862,6 +862,13 @@
       font-size: 10px; letter-spacing: 1px; color: var(--lavender);
       max-width: 80px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
     }
+    #logout-btn {
+      background: transparent; border: 1px solid rgba(184,146,216,0.15);
+      color: var(--muted); border-radius: 50%; width: 20px; height: 20px;
+      font-size: 9px; cursor: pointer; display: flex; align-items: center;
+      justify-content: center; flex-shrink: 0; transition: all 0.2s;
+    }
+    #logout-btn:hover { background: var(--rose-dim); color: var(--rose); border-color: rgba(196,102,122,0.3); }
 
     /* ── CHECK-IN BUTTON ── */
     #checkin-card {
@@ -991,6 +998,7 @@
         <div id="user-avatar-wrap">
           <img id="user-avatar" src="" alt=""/>
           <span id="user-name"></span>
+          <button id="logout-btn" title="Sign out">✕</button>
         </div>
       </div>
       <div class="live-dot" id="live-indicator" style="display:none">
@@ -1788,6 +1796,17 @@
     } catch(e) { console.warn('Session restore failed:', e.message); }
   }
 
+  // Logout
+  document.getElementById('logout-btn').addEventListener('click', () => {
+    clearUserToken();
+    localStorage.removeItem('alex_chat_token');
+    localStorage.removeItem('alex_chat_user');
+    _currentUser = null;
+    document.getElementById('twitch-login-btn').style.display = '';
+    document.getElementById('user-avatar-wrap').style.display = 'none';
+    document.getElementById('checkin-card').classList.remove('show');
+  });
+
   // Twitch login — reuse the OAuth popup flow from stream.html
   document.getElementById('twitch-login-btn').addEventListener('click', async () => {
     try {
@@ -1801,8 +1820,7 @@
       const popup = window.open(authUrl, 'twitch_auth', 'width=520,height=680,menubar=no,toolbar=no');
 
       const handler = async (e) => {
-        if (!e.data?.type === 'twitch_oauth') return;
-        if (e.data.type !== 'twitch_oauth') return;
+        if (!e.data || e.data.type !== 'twitch_oauth') return;
         window.removeEventListener('message', handler);
         popup?.close();
 
