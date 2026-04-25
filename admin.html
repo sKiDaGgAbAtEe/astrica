@@ -300,6 +300,36 @@
       font-size: 11px; line-height: 1; opacity: 0.6; padding: 0;
     }
     .tag-chip button:hover { opacity: 1; }
+    .fa-pending-card {
+      display: flex; gap: 14px; align-items: center;
+      background: rgba(0,0,0,0.22); border: 1px solid var(--border);
+      border-radius: 12px; padding: 12px 14px; margin-bottom: 8px;
+    }
+    .fa-pending-thumb { width: 60px; height: 60px; object-fit: cover; border-radius: 6px; flex-shrink: 0; border: 1px solid rgba(184,146,216,0.15); }
+    .fa-pending-info  { flex: 1; min-width: 0; }
+    .fa-pending-name  { font-size: 13px; font-weight: 400; }
+    .fa-pending-meta  { font-size: 10px; color: var(--muted); margin-top: 2px; }
+    .fa-gallery-thumb { width: 70px; height: 70px; object-fit: cover; border-radius: 6px; border: 1px solid rgba(184,146,216,0.15); }
+    /* ── USERS & RAFFLE ── */
+    .user-card {
+      display: flex; align-items: center; gap: 12px;
+      background: rgba(0,0,0,0.22); border: 1px solid var(--border);
+      border-radius: 12px; padding: 10px 14px; margin-bottom: 7px;
+    }
+    .user-avatar { width: 38px; height: 38px; border-radius: 50%; border: 1.5px solid rgba(184,146,216,0.2); object-fit: cover; flex-shrink: 0; }
+    .user-info { flex: 1; min-width: 0; }
+    .user-name { font-size: 13px; font-weight: 400; }
+    .user-meta { font-size: 10px; color: var(--muted); margin-top: 2px; }
+    .streak-pip { display: inline-block; background: rgba(232,200,122,0.12); border: 1px solid rgba(232,200,122,0.22); color: rgba(232,200,122,0.8); font-size: 8px; letter-spacing: 1.2px; padding: 2px 7px; border-radius: 20px; margin-left: 6px; }
+    .raffle-pill { display: inline-block; background: rgba(184,146,216,0.12); border: 1px solid rgba(184,146,216,0.25); color: var(--lav); font-size: 8px; letter-spacing: 1.2px; padding: 2px 7px; border-radius: 20px; margin-left: 6px; }
+    #raffle-winner-box { background: rgba(232,200,122,0.08); border: 1px solid rgba(232,200,122,0.25); border-radius: 14px; padding: 20px; text-align: center; display: none; margin-bottom: 20px; }
+    #raffle-winner-box.show { display: block; }
+    #raffle-winner-name { font-family: var(--serif); font-size: 28px; font-style: italic; color: var(--gold); }
+    #raffle-winner-meta { font-size: 11px; color: var(--muted); margin-top: 6px; letter-spacing: 1px; }
+    .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; }
+    .stat-box { background: rgba(0,0,0,0.22); border: 1px solid var(--border); border-radius: 12px; padding: 14px; text-align: center; }
+    .stat-num { font-family: var(--serif); font-size: 28px; font-weight: 300; color: var(--lav); }
+    .stat-label { font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); margin-top: 4px; }
   </style>
 </head>
 <body>
@@ -336,6 +366,9 @@
     <button class="nav-tab active" data-tab="leaderboard">Leaderboard</button>
     <button class="nav-tab" data-tab="events">Events</button>
     <button class="nav-tab" data-tab="schedule">Schedule</button>
+    <button class="nav-tab" data-tab="users">Users</button>
+    <button class="nav-tab" data-tab="raffle">Raffle</button>
+    <button class="nav-tab" data-tab="fanart">Fan Art</button>
     <button class="nav-tab" data-tab="about">About</button>
   </div>
 
@@ -449,6 +482,83 @@
         <button class="btn" id="save-about-btn">Save About</button>
         <span class="save-status" id="about-status"></span>
       </div>
+    </div>
+
+    <!-- ══ USERS ══ -->
+    <div class="tab-section" id="tab-users">
+      <div class="sec-title">Registered <em>Users</em></div>
+      <div class="sec-desc">Everyone who has signed in with Twitch. Sorted by join date.</div>
+
+      <div class="stats-row" id="user-stats-row">
+        <div class="stat-box"><div class="stat-num" id="stat-total">—</div><div class="stat-label">Total Users</div></div>
+        <div class="stat-box"><div class="stat-num" id="stat-streaking">—</div><div class="stat-label">Active Streaks</div></div>
+        <div class="stat-box"><div class="stat-num" id="stat-raffle">—</div><div class="stat-label">Raffle Eligible</div></div>
+      </div>
+
+      <div class="section-label" style="margin-bottom:12px;">☽ &nbsp; All Users</div>
+      <div id="users-list"><p style="color:var(--muted);font-size:12px;">Loading…</p></div>
+    </div>
+
+    <!-- ══ RAFFLE ══ -->
+    <div class="tab-section" id="tab-raffle">
+      <div class="sec-title">Raffle <em>Draw</em></div>
+      <div class="sec-desc">Users earn 1 entry per 7-day check-in streak. Entries are weighted — more entries = better odds. Drawing resets all entries.</div>
+
+      <div id="raffle-winner-box">
+        <div style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:10px;">✦ &nbsp; Winner &nbsp; ✦</div>
+        <div id="raffle-winner-name"></div>
+        <div id="raffle-winner-meta"></div>
+      </div>
+
+      <div class="item-card" style="margin-bottom:18px;">
+        <div class="field">
+          <label>Prize Note (optional)</label>
+          <input id="raffle-prize" type="text" placeholder="e.g. Amazon gift card, sub, merch…"/>
+        </div>
+        <button class="btn" id="raffle-draw-btn">🎲 &nbsp; Draw Winner</button>
+      </div>
+
+      <div class="section-label" style="margin-bottom:12px;">✦ &nbsp; Eligible Users</div>
+      <div id="raffle-eligible-list"><p style="color:var(--muted);font-size:12px;">Loading…</p></div>
+
+      <div class="divider"></div>
+
+      <div class="section-label" style="margin-bottom:12px;">☽ &nbsp; Draw History</div>
+      <div id="raffle-history-list"><p style="color:var(--muted);font-size:12px;">Loading…</p></div>
+    </div>
+
+    <!-- ══ FAN ART ══ -->
+    <div class="tab-section" id="tab-fanart">
+      <div class="sec-title">Fan <em>Art Gallery</em></div>
+      <div class="sec-desc">Upload art directly, or approve submissions from viewers. Approved pieces appear in the public gallery.</div>
+
+      <div class="divider"></div>
+
+      <div class="sec-title" style="font-size:16px;">Upload <em>Art</em></div>
+      <div class="item-card">
+        <div class="field-row">
+          <div class="field"><label>Artist Name</label><input id="fa-admin-artist" type="text" placeholder="Artist or credit"/></div>
+          <div class="field"><label>Title</label><input id="fa-admin-title" type="text" placeholder="Art title"/></div>
+        </div>
+        <div class="field">
+          <label>Image File</label>
+          <input id="fa-admin-file" type="file" accept="image/*" style="background:rgba(0,0,0,0.2);border:1px dashed rgba(184,146,216,0.2);border-radius:10px;padding:10px 14px;color:var(--muted);width:100%;cursor:pointer;"/>
+        </div>
+        <button class="btn" id="fa-admin-upload-btn">✦ Upload to Gallery</button>
+        <span class="save-status" id="fa-upload-status" style="margin-left:12px;"></span>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="sec-title" style="font-size:16px;">Pending <em>Submissions</em></div>
+      <div id="fa-pending-list">
+        <p style="color:var(--muted);font-size:12px;letter-spacing:1px;">Loading…</p>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="sec-title" style="font-size:16px;">Live <em>Gallery</em></div>
+      <div id="fa-gallery-list"></div>
     </div>
 
   </div><!-- /content -->
@@ -781,12 +891,177 @@ document.getElementById('eventsub-btn').addEventListener('click', async () => {
 function escHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 function escAttr(s) { return String(s).replace(/"/g,'&quot;'); }
 
+// ═══ FAN ART ═════════════════════════════════════════════════════════════════
+async function loadFanartPending() {
+  const r = await apiGet('/api/alex/admin/fanart/pending');
+  const list = document.getElementById('fa-pending-list');
+  const subs = r.submissions?.filter(s => !s.approved) || [];
+  if (!subs.length) { list.innerHTML = '<p style="color:var(--muted);font-size:12px;letter-spacing:1px;">No pending submissions.</p>'; return; }
+  list.innerHTML = subs.map(s => `
+    <div class="fa-pending-card" id="pend-${s.id}">
+      <img class="fa-pending-thumb" src="${API}/api/alex/fanart/image/${s.file}" alt="" onerror="this.style.display='none'"/>
+      <div class="fa-pending-info">
+        <div class="fa-pending-name">${escHtml(s.title||'Untitled')}</div>
+        <div class="fa-pending-meta">by ${escHtml(s.artist||'?')} · ${new Date(s.submitted).toLocaleDateString()}</div>
+      </div>
+      <div style="display:flex;gap:6px;flex-shrink:0;">
+        <button class="btn sm" onclick="approveFanart('${s.id}')">✓ Approve</button>
+        <button class="btn sm rose" onclick="deleteFanartPending('${s.id}')">✕</button>
+      </div>
+    </div>`).join('');
+}
+
+async function loadFanartGallery() {
+  const r    = await apiGet('/api/alex/fanart');
+  const list = document.getElementById('fa-gallery-list');
+  const art  = r.art || [];
+  if (!art.length) { list.innerHTML = '<p style="color:var(--muted);font-size:12px;letter-spacing:1px;">Gallery is empty.</p>'; return; }
+  list.innerHTML = art.map(a => `
+    <div class="fa-pending-card" id="gal-${a.id}">
+      <img class="fa-gallery-thumb" src="${API}${a.url}" alt="" onerror="this.style.display='none'"/>
+      <div class="fa-pending-info">
+        <div class="fa-pending-name">${escHtml(a.title||'Untitled')}</div>
+        <div class="fa-pending-meta">by ${escHtml(a.artist||'?')}</div>
+      </div>
+      <button class="btn sm rose" onclick="deleteGalleryItem('${a.id}')">✕ Remove</button>
+    </div>`).join('');
+}
+
+async function approveFanart(id) {
+  const r = await apiPost('/api/alex/admin/fanart/approve', { id });
+  if (r.ok) { await loadFanartPending(); await loadFanartGallery(); showStatus('fa-upload-status', true, '✓ approved'); }
+}
+
+async function deleteFanartPending(id) {
+  document.getElementById('pend-'+id)?.remove();
+}
+
+async function deleteGalleryItem(id) {
+  if (!confirm('Remove from gallery?')) return;
+  await apiDel('/api/alex/admin/fanart', { id });
+  await loadFanartGallery();
+}
+
+document.getElementById('fa-admin-upload-btn').addEventListener('click', async () => {
+  const artist = document.getElementById('fa-admin-artist').value.trim();
+  const title  = document.getElementById('fa-admin-title').value.trim();
+  const file   = document.getElementById('fa-admin-file').files[0];
+  if (!file) { showStatus('fa-upload-status', false, '✗ choose a file'); return; }
+  const btn = document.getElementById('fa-admin-upload-btn');
+  btn.disabled = true;
+  const fd = new FormData();
+  fd.append('image',  file);
+  fd.append('artist', artist || 'Alex');
+  fd.append('title',  title  || 'Untitled');
+  try {
+    const r = await fetch(`${API}/api/alex/admin/fanart/upload`, {
+      method: 'POST', headers: { 'X-Alex-Admin': getSavedPw() }, body: fd
+    });
+    const d = await r.json();
+    if (d.ok) { showStatus('fa-upload-status', true, '✓ uploaded'); await loadFanartGallery(); }
+    else       showStatus('fa-upload-status', false, '✗ '+d.error);
+  } catch(e) { showStatus('fa-upload-status', false, '✗ error'); }
+  finally { btn.disabled = false; }
+});
+
+// ═══ USERS ═══════════════════════════════════════════════════════════════════
+async function loadUsers() {
+  const r = await apiGet('/api/alex/admin/users');
+  const users = r.users || [];
+
+  document.getElementById('stat-total').textContent    = r.total || 0;
+  document.getElementById('stat-streaking').textContent = users.filter(u => u.streak.current_streak > 0).length;
+  document.getElementById('stat-raffle').textContent   = users.filter(u => u.streak.raffle_eligible).length;
+
+  const list = document.getElementById('users-list');
+  if (!users.length) { list.innerHTML = '<p style="color:var(--muted);font-size:12px;letter-spacing:1px;">No users yet.</p>'; return; }
+
+  list.innerHTML = users.map(u => {
+    const streak  = u.streak.current_streak;
+    const entries = u.streak.raffle_entries;
+    const lastSeen = new Date(u.last_seen).toLocaleDateString();
+    return `<div class="user-card">
+      <img class="user-avatar" src="${escHtml(u.avatar_url||'')}" alt="" onerror="this.style.background='rgba(184,146,216,0.1)'"/>
+      <div class="user-info">
+        <div class="user-name">${escHtml(u.display_name||u.login)}
+          ${streak > 0 ? `<span class="streak-pip">🔥 ${streak} day streak</span>` : ''}
+          ${u.streak.raffle_eligible ? `<span class="raffle-pill">✦ ${entries} ${entries===1?'entry':'entries'}</span>` : ''}
+        </div>
+        <div class="user-meta">@${escHtml(u.login)} · last seen ${lastSeen}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ═══ RAFFLE ══════════════════════════════════════════════════════════════════
+async function loadRaffle() {
+  const [eligible, history] = await Promise.all([
+    apiGet('/api/alex/admin/raffle'),
+    apiGet('/api/alex/admin/raffle/history')
+  ]);
+
+  const el = document.getElementById('raffle-eligible-list');
+  const elig = eligible.eligible || [];
+  if (!elig.length) {
+    el.innerHTML = '<p style="color:var(--muted);font-size:12px;letter-spacing:1px;">No eligible users yet — users need a 7-day streak.</p>';
+  } else {
+    el.innerHTML = elig.map(r => {
+      const name = r.users?.display_name || r.users?.login || r.user_id;
+      return `<div class="user-card">
+        <div class="user-info">
+          <div class="user-name">${escHtml(name)}</div>
+          <div class="user-meta">${r.raffle_entries} ${r.raffle_entries===1?'entry':'entries'}</div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  const hl = document.getElementById('raffle-history-list');
+  const hist = history.history || [];
+  if (!hist.length) {
+    hl.innerHTML = '<p style="color:var(--muted);font-size:12px;letter-spacing:1px;">No draws yet.</p>';
+  } else {
+    hl.innerHTML = hist.map(d => `
+      <div class="user-card">
+        <div class="user-info">
+          <div class="user-name">🎉 ${escHtml(d.winner_name)}</div>
+          <div class="user-meta">${new Date(d.drawn_at).toLocaleDateString()} · pool of ${d.entries_snapshot}${d.prize_note ? ' · ' + escHtml(d.prize_note) : ''}</div>
+        </div>
+      </div>`).join('');
+  }
+}
+
+document.getElementById('raffle-draw-btn').addEventListener('click', async () => {
+  if (!confirm('Draw a winner now? This will reset all raffle entries.')) return;
+  const btn   = document.getElementById('raffle-draw-btn');
+  const prize = document.getElementById('raffle-prize').value.trim();
+  btn.disabled = true; btn.textContent = 'Drawing…';
+  try {
+    const r = await apiPost('/api/alex/admin/raffle/draw', { prize_note: prize });
+    if (r.ok) {
+      const box = document.getElementById('raffle-winner-box');
+      document.getElementById('raffle-winner-name').textContent = r.winner.name;
+      document.getElementById('raffle-winner-meta').textContent = `${r.winner.entries} ${r.winner.entries===1?'entry':'entries'} · pool of ${r.pool_size}${prize ? ' · ' + prize : ''}`;
+      box.classList.add('show');
+      await loadRaffle();
+      await loadUsers();
+    } else {
+      alert('Error: ' + r.error);
+    }
+  } catch(e) { alert('Error: ' + e.message); }
+  finally { btn.disabled = false; btn.textContent = '🎲 Draw Winner'; }
+});
+
 // ── LOAD ALL ──
 function loadAll() {
   loadLeaderboard();
   loadEvents();
   loadSchedule();
   loadAbout();
+  loadFanartPending();
+  loadFanartGallery();
+  loadUsers();
+  loadRaffle();
 }
 </script>
 </body>
