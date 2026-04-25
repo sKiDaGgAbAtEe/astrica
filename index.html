@@ -866,6 +866,55 @@
       text-transform: uppercase; padding: 2px 8px; border-radius: 20px;
     }
 
+
+    /* ── STREAM LAYOUT ── */
+    #stream-layout {
+      flex: 1; display: flex; flex-direction: column;
+      gap: 0; overflow: hidden; min-height: 0;
+    }
+    #stream-player-wrap {
+      flex-shrink: 0; margin: 0 18px 6px;
+      border-radius: 14px; overflow: hidden;
+      border: 1px solid rgba(184,146,216,0.15);
+      aspect-ratio: 16/9; background: #000;
+    }
+    #stream-player-wrap iframe {
+      width: 100%; height: 100%; border: none; display: block;
+    }
+    #stream-chat-wrap {
+      flex: 1; margin: 0 18px 14px; min-height: 180px;
+      border-radius: 14px; overflow: hidden;
+      border: 1px solid rgba(184,146,216,0.10);
+      background: rgba(0,0,0,0.25);
+    }
+    #stream-chat-wrap iframe {
+      width: 100%; height: 100%; border: none; display: block;
+    }
+
+    /* Theatre mode — player fills screen, chat hidden */
+    #panel-stream.theatre #stream-layout { flex-direction: row; }
+    #panel-stream.theatre #stream-player-wrap {
+      flex: 1; aspect-ratio: unset; margin: 0 6px 14px 18px;
+      height: auto;
+    }
+    #panel-stream.theatre #stream-chat-wrap {
+      width: 300px; flex: none; margin: 0 18px 14px 0;
+    }
+
+    #theatre-btn {
+      background: rgba(0,0,0,0.2); border: 1px solid rgba(184,146,216,0.12);
+      color: var(--muted); font-size: 14px;
+      width: 28px; height: 28px; border-radius: 8px;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      transition: all 0.2s; margin-left: auto;
+    }
+    #theatre-btn:hover { background: rgba(184,146,216,0.1); color: var(--lavender); }
+
+    @media (max-width: 600px) {
+      #panel-stream.theatre #stream-layout { flex-direction: column; }
+      #panel-stream.theatre #stream-chat-wrap { width: auto; }
+    }
+
   </style>
 </head>
 <body>
@@ -1023,9 +1072,21 @@
       <div class="iframe-header">
         <button class="back-btn">‹ Back</button>
         <span class="iframe-label">live stream</span>
+        <button id="theatre-btn" title="Theatre mode">⛶</button>
       </div>
-      <div class="iframe-wrap">
-        <iframe src="astrica_stream.html" title="AstricAlex Live" allow="autoplay; fullscreen"></iframe>
+      <div id="stream-layout">
+        <div id="stream-player-wrap">
+          <iframe id="twitch-player"
+            src="https://player.twitch.tv/?channel=astricalex&parent=skidaggabatee.github.io&autoplay=false&muted=false"
+            allowfullscreen allow="autoplay; fullscreen">
+          </iframe>
+        </div>
+        <div id="stream-chat-wrap">
+          <iframe id="twitch-chat"
+            src="https://www.twitch.tv/embed/astricalex/chat?parent=skidaggabatee.github.io&darkpopout"
+            title="Chat">
+          </iframe>
+        </div>
       </div>
     </div>
 
@@ -1281,6 +1342,15 @@
     const pct = muted ? 0 : (audio.volume * 100);
     volSlider.style.background = `linear-gradient(to right, rgba(184,146,216,0.6) 0%, rgba(184,146,216,0.6) ${pct}%, rgba(255,255,255,0.1) ${pct}%)`;
   }
+
+  // ── THEATRE MODE ──
+  document.getElementById('theatre-btn').addEventListener('click', () => {
+    const panel = document.getElementById('panel-stream');
+    const btn   = document.getElementById('theatre-btn');
+    panel.classList.toggle('theatre');
+    btn.title = panel.classList.contains('theatre') ? 'Exit theatre' : 'Theatre mode';
+    btn.textContent = panel.classList.contains('theatre') ? '⊠' : '⛶';
+  });
 
   volBtn.addEventListener('click', () => {
     muted = !muted;
@@ -1683,7 +1753,7 @@
     } catch(e) { console.warn('Session restore failed:', e.message); }
   }
 
-  // Twitch login — reuse the OAuth popup flow from astrica_stream.html
+  // Twitch login — reuse the OAuth popup flow from stream.html
   document.getElementById('twitch-login-btn').addEventListener('click', async () => {
     try {
       // Fetch client ID from server
