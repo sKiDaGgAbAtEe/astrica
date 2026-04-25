@@ -49,7 +49,7 @@
       min-height: 100vh;
       overflow: hidden;
       isolation: isolate;
-      background: url('bg.png') center top / contain no-repeat;
+      background: url('bg.png') center top / 100% 100% no-repeat;
     }
 
     /* Full-viewport blown-up backdrop — stays behind everything */
@@ -1786,7 +1786,7 @@
       // Fetch client ID from server
       const ciRes    = await fetch(`${API}/api/twitch-client-id`);
       const { client_id } = await ciRes.json();
-      const redirectUri  = encodeURIComponent('https://skidaggabatee.github.io/astrica/twitch_callback.html');
+      const redirectUri  = encodeURIComponent('https://skidaggabatee.github.io/astrica/alex_twitch_callback.html');
       const state        = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2);
       const authUrl      = `https://id.twitch.tv/oauth2/authorize?client_id=${client_id}&redirect_uri=${redirectUri}&response_type=token&scope=chat%3Aread+chat%3Aedit&state=${state}`;
 
