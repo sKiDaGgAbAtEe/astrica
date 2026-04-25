@@ -625,6 +625,229 @@
     }
     .empty-state .big-icon { font-size: 40px; margin-bottom: 12px; opacity: 0.5; }
     .empty-state p { font-family: var(--serif); font-style: italic; font-size: 14px; }
+
+    /* ── WEEKLY SCHEDULE GRID ── */
+    .weekly-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 5px; margin-bottom: 4px;
+    }
+    .week-day {
+      background: rgba(0,0,0,0.22);
+      border: 1px solid rgba(184,146,216,0.10);
+      border-radius: 10px; padding: 7px 5px;
+      text-align: center; font-size: 9px;
+    }
+    .week-day.has-event {
+      background: rgba(74,29,110,0.28);
+      border-color: rgba(184,146,216,0.25);
+    }
+    .week-day.today {
+      border-color: rgba(196,102,122,0.45);
+      background: rgba(196,102,122,0.10);
+    }
+    .week-day-name { font-size: 7px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); margin-bottom: 3px; }
+    .week-day-num  { font-family: var(--serif); font-size: 16px; font-weight: 300; color: #fff; line-height: 1; }
+    .week-day-dot  { width: 4px; height: 4px; border-radius: 50%; background: var(--lavender); margin: 4px auto 0; }
+    .week-day-label{ font-size: 7px; color: var(--lavender); margin-top: 2px; letter-spacing: 0.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .week-empty    { font-size: 11px; color: var(--muted); text-align: center; padding: 12px 0; letter-spacing: 1px; }
+
+    /* ── SUPPORT CARDS ── */
+    .support-card {
+      display: flex; align-items: center; gap: 14px;
+      background: rgba(0,0,0,0.25); border: 1px solid rgba(184,146,216,0.12);
+      border-radius: 16px; padding: 14px 16px;
+      text-decoration: none; color: var(--text);
+      transition: border-color 0.2s, background 0.2s;
+    }
+    .support-card:hover { border-color: rgba(184,146,216,0.3); background: rgba(184,146,216,0.06); }
+    .support-icon { font-size: 24px; flex-shrink: 0; }
+    .support-text { flex: 1; min-width: 0; }
+    .support-title{ font-size: 14px; font-weight: 400; }
+    .support-sub  { font-size: 10px; color: var(--muted); margin-top: 2px; }
+    .support-arrow{ font-size: 20px; color: var(--faint); }
+
+    /* ── GALLERY ── */
+    #fanart-panel-inner { padding-bottom: 100px; }
+    .gallery-room {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+      gap: 20px 16px;
+      padding: 10px 0 4px;
+    }
+    .gallery-loading { text-align: center; padding: 30px 0; }
+
+    .art-frame {
+      display: flex; flex-direction: column; align-items: center;
+      cursor: pointer; animation: fadeUp 0.5s ease both;
+    }
+    .art-mount {
+      position: relative;
+      background: #1a0f28;
+      border: 2px solid #3a2550;
+      border-radius: 4px;
+      padding: 8px 8px 28px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.7), inset 0 0 0 1px rgba(255,255,255,0.04);
+      width: 100%;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .art-frame:hover .art-mount {
+      transform: translateY(-3px);
+      box-shadow: 0 16px 40px rgba(0,0,0,0.8), 0 0 20px rgba(184,146,216,0.08), inset 0 0 0 1px rgba(255,255,255,0.06);
+    }
+
+    /* Spotlight beam above each frame */
+    .art-spotlight {
+      width: 2px; height: 22px;
+      background: linear-gradient(to bottom, rgba(255,245,200,0.7), rgba(255,245,200,0.1));
+      margin: 0 auto 0;
+      position: relative;
+    }
+    .art-spotlight::after {
+      content: '';
+      position: absolute; bottom: -4px; left: 50%;
+      transform: translateX(-50%);
+      width: 6px; height: 6px; border-radius: 50%;
+      background: rgba(255,245,200,0.9);
+      box-shadow: 0 0 8px 3px rgba(255,245,200,0.35), 0 0 20px 8px rgba(255,230,150,0.12);
+    }
+
+    .art-image {
+      width: 100%; aspect-ratio: 3/4; object-fit: cover;
+      border-radius: 2px; display: block;
+    }
+    .art-plaque {
+      position: absolute; bottom: 6px; left: 8px; right: 8px;
+      text-align: center;
+    }
+    .art-plaque-title { font-family: var(--serif); font-size: 9px; font-style: italic; color: rgba(200,180,220,0.7); letter-spacing: 0.5px; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .art-plaque-by    { font-size: 7px; letter-spacing: 1px; color: var(--muted); margin-top: 1px; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .art-wall-label   { font-size: 8px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); margin-top: 6px; text-align: center; width: 100%; }
+
+    /* Lightbox */
+    #art-lightbox {
+      position: fixed; inset: 0; z-index: 300;
+      background: rgba(0,0,0,0.92);
+      display: flex; align-items: center; justify-content: center;
+      padding: 20px;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.25s ease;
+      backdrop-filter: blur(10px);
+    }
+    #art-lightbox.open { opacity: 1; pointer-events: all; }
+    #art-lightbox-inner {
+      max-width: 500px; width: 100%;
+      display: flex; flex-direction: column; align-items: center; gap: 12px;
+      transform: scale(0.95); transition: transform 0.25s ease;
+    }
+    #art-lightbox.open #art-lightbox-inner { transform: scale(1); }
+    #art-lightbox-img  { max-width: 100%; max-height: 70vh; object-fit: contain; border-radius: 4px; border: 2px solid #3a2550; box-shadow: 0 20px 60px rgba(0,0,0,0.9); }
+    #art-lightbox-meta { text-align: center; }
+    #art-lightbox-title{ font-family: var(--serif); font-size: 18px; font-style: italic; color: #fff; }
+    #art-lightbox-by   { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); margin-top: 4px; }
+    #art-lightbox-close{
+      position: absolute; top: 16px; right: 16px;
+      background: rgba(184,146,216,0.1); border: 1px solid rgba(184,146,216,0.2);
+      border-radius: 50%; width: 34px; height: 34px;
+      color: var(--muted); font-size: 16px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.2s;
+    }
+    #art-lightbox-close:hover { background: rgba(184,146,216,0.2); color: #fff; }
+
+    /* Fan art submit */
+    .fanart-submit-box {
+      background: rgba(0,0,0,0.22); border: 1px solid rgba(184,146,216,0.12);
+      border-radius: 14px; padding: 16px;
+    }
+    .fa-input {
+      width: 100%; background: rgba(0,0,0,0.25); border: 1px solid rgba(184,146,216,0.12);
+      border-radius: 10px; padding: 9px 14px;
+      color: var(--text); font-family: var(--sans); font-size: 13px;
+      outline: none; transition: border-color 0.2s;
+    }
+    .fa-input:focus { border-color: rgba(184,146,216,0.4); }
+    .fa-file-label {
+      display: flex; align-items: center; justify-content: center;
+      width: 100%; padding: 9px 14px;
+      background: rgba(0,0,0,0.22); border: 1px dashed rgba(184,146,216,0.2);
+      border-radius: 10px; cursor: pointer;
+      font-size: 11px; letter-spacing: 1px; color: var(--muted);
+      transition: all 0.2s;
+    }
+    .fa-file-label:hover { border-color: rgba(184,146,216,0.4); color: var(--lavender); }
+    .fa-submit-btn {
+      margin-top: 12px; width: 100%;
+      background: rgba(184,146,216,0.12); border: 1px solid rgba(184,146,216,0.25);
+      color: var(--lavender); font-family: var(--sans); font-size: 10px;
+      letter-spacing: 2.5px; text-transform: uppercase;
+      padding: 11px; border-radius: 10px; cursor: pointer;
+      transition: all 0.2s;
+    }
+    .fa-submit-btn:hover { background: rgba(184,146,216,0.22); }
+    .fa-submit-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .fa-status { font-size: 11px; letter-spacing: 1px; min-height: 18px; margin-top: 8px; text-align: center; }
+    .fa-status.ok  { color: #7dd4a0; }
+    .fa-status.err { color: var(--rose); }
+
+
+    /* ── USER AUTH ── */
+    #user-area {
+      display: flex; align-items: center; gap: 8px; flex-shrink: 0;
+    }
+    #twitch-login-btn {
+      background: rgba(100,50,180,0.25); border: 1px solid rgba(184,146,216,0.25);
+      color: var(--lavender); font-family: var(--sans); font-size: 9px;
+      letter-spacing: 1.5px; text-transform: uppercase;
+      padding: 5px 12px; border-radius: 20px; cursor: pointer;
+      transition: all 0.2s; white-space: nowrap;
+    }
+    #twitch-login-btn:hover { background: rgba(184,146,216,0.18); }
+    #user-avatar-wrap {
+      display: none; align-items: center; gap: 7px;
+    }
+    #user-avatar {
+      width: 28px; height: 28px; border-radius: 50%;
+      border: 1.5px solid rgba(184,146,216,0.3); object-fit: cover;
+    }
+    #user-name {
+      font-size: 10px; letter-spacing: 1px; color: var(--lavender);
+      max-width: 80px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+
+    /* ── CHECK-IN BUTTON ── */
+    #checkin-card {
+      width: 280px; display: none;
+      background: rgba(74,29,110,0.35);
+      border: 1px solid rgba(184,146,216,0.2);
+      border-radius: 999px; padding: 9px 16px;
+      align-items: center; gap: 12px;
+      animation: fadeUp 0.4s ease both;
+      flex-shrink: 0;
+    }
+    #checkin-card.show { display: flex; }
+    #checkin-btn {
+      background: rgba(184,146,216,0.15); border: 1px solid rgba(184,146,216,0.3);
+      color: var(--lavender); font-family: var(--sans); font-size: 9px;
+      letter-spacing: 1.5px; text-transform: uppercase;
+      padding: 5px 14px; border-radius: 20px; cursor: pointer;
+      transition: all 0.2s; white-space: nowrap; flex-shrink: 0;
+    }
+    #checkin-btn:hover:not(:disabled) { background: rgba(184,146,216,0.28); }
+    #checkin-btn:disabled { opacity: 0.4; cursor: default; }
+    #checkin-btn.done { background: rgba(125,212,160,0.12); border-color: rgba(125,212,160,0.3); color: #7dd4a0; }
+    #checkin-info { flex: 1; min-width: 0; }
+    #checkin-streak { font-size: 12px; color: var(--text); }
+    #checkin-sub    { font-size: 9px; color: var(--muted); margin-top: 1px; }
+
+    /* ── RAFFLE BADGE ── */
+    .raffle-badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      background: rgba(232,200,122,0.12); border: 1px solid rgba(232,200,122,0.25);
+      color: rgba(232,200,122,0.85); font-size: 8px; letter-spacing: 1.5px;
+      text-transform: uppercase; padding: 2px 8px; border-radius: 20px;
+    }
+
   </style>
 </head>
 <body>
@@ -660,6 +883,13 @@
     </div>
     <div id="topbar-right">
       <button id="vol-btn" title="Toggle mute">🔊</button>
+      <div id="user-area">
+        <button id="twitch-login-btn">Sign in with Twitch</button>
+        <div id="user-avatar-wrap">
+          <img id="user-avatar" src="" alt=""/>
+          <span id="user-name"></span>
+        </div>
+      </div>
       <div class="live-dot" id="live-indicator" style="display:none">
         <div class="live-dot-pulse"></div>
         live
@@ -673,6 +903,8 @@
     <button class="tab-btn" data-tab="leaderboard">Leaderboard</button>
     <button class="tab-btn" data-tab="clips">Clips</button>
     <button class="tab-btn" data-tab="events">Events</button>
+    <button class="tab-btn" data-tab="fanart">Fan Art</button>
+    <button class="tab-btn" data-tab="support">Support</button>
     <button class="tab-btn" data-tab="about">About</button>
   </div>
 
@@ -680,6 +912,14 @@
 
     <!-- ── HOME ── -->
     <div class="cards-panel active" id="panel-home">
+
+      <div id="checkin-card">
+        <div id="checkin-info">
+          <div id="checkin-streak">🌙 &nbsp; Daily Check-in</div>
+          <div id="checkin-sub">Sign in to start your streak</div>
+        </div>
+        <button id="checkin-btn" disabled>Check in</button>
+      </div>
 
       <a class="twitch-pill" href="https://twitch.tv/astricalex" target="_blank" rel="noopener">
         <span>📺</span> twitch.tv/astricalex
@@ -725,6 +965,26 @@
         <div class="card-arrow">›</div>
       </div>
 
+      <div class="fairy-card" data-open="fanart"
+           style="background:rgba(70,15,90,0.50);">
+        <div class="card-icon" style="background:rgba(90,15,110,0.38);">🖼</div>
+        <div class="card-text">
+          <div class="card-title">Fan Art</div>
+          <div class="card-sub">gallery &amp; submissions</div>
+        </div>
+        <div class="card-arrow">›</div>
+      </div>
+
+      <div class="fairy-card" data-open="support"
+           style="background:rgba(100,30,55,0.45);">
+        <div class="card-icon" style="background:rgba(120,30,55,0.38);">💜</div>
+        <div class="card-text">
+          <div class="card-title">Support Alex</div>
+          <div class="card-sub">ko-fi · wishlist</div>
+        </div>
+        <div class="card-arrow">›</div>
+      </div>
+
       <div class="fairy-card" data-open="about"
            style="background:rgba(50,20,80,0.50);">
         <div class="card-icon" style="background:rgba(60,20,100,0.38);">🌙</div>
@@ -755,199 +1015,16 @@
         <span class="iframe-label">leaderboard</span>
       </div>
       <div class="panel-inner">
-
-        <div class="section-label">✦ &nbsp; Select Game</div>
-
-        <div class="lb-game-tabs">
-          <button class="lb-tab active" data-game="trivia">Trivia</button>
-          <button class="lb-tab" data-game="mario">Mario Kart</button>
-          <button class="lb-tab" data-game="speed">Speed Run</button>
-          <button class="lb-tab" data-game="points">Channel Points</button>
-        </div>
-
-        <div class="section-label">☽ &nbsp; Hall of Fame</div>
-
-        <!-- TRIVIA -->
-        <div class="lb-board" id="lb-trivia">
-          <div class="lb-entry gold-entry">
-            <div class="lb-rank r1">1</div>
-            <div class="lb-crown">👑</div>
-            <div class="lb-name">MoonbeamMarta</div>
-            <div>
-              <div class="lb-score">2,840 pts</div>
-              <div class="lb-meta">48 wins</div>
-            </div>
-          </div>
-          <div class="lb-entry silver-entry">
-            <div class="lb-rank r2">2</div>
-            <div class="lb-crown" style="opacity:0">👑</div>
-            <div class="lb-name">StardustKai</div>
-            <div>
-              <div class="lb-score">2,310 pts</div>
-              <div class="lb-meta">39 wins</div>
-            </div>
-          </div>
-          <div class="lb-entry bronze-entry">
-            <div class="lb-rank r3">3</div>
-            <div class="lb-crown" style="opacity:0">👑</div>
-            <div class="lb-name">NebulaNora</div>
-            <div>
-              <div class="lb-score">1,975 pts</div>
-              <div class="lb-meta">31 wins</div>
-            </div>
-          </div>
-          <div class="lb-entry">
-            <div class="lb-rank other">4</div>
-            <div class="lb-crown" style="opacity:0">👑</div>
-            <div class="lb-name">VoidPixel</div>
-            <div>
-              <div class="lb-score">1,640 pts</div>
-              <div class="lb-meta">22 wins</div>
-            </div>
-          </div>
-          <div class="lb-entry">
-            <div class="lb-rank other">5</div>
-            <div class="lb-crown" style="opacity:0">👑</div>
-            <div class="lb-name">CrimsonFae</div>
-            <div>
-              <div class="lb-score">1,420 pts</div>
-              <div class="lb-meta">18 wins</div>
-            </div>
-          </div>
-          <div class="lb-entry">
-            <div class="lb-rank other">6</div>
-            <div class="lb-crown" style="opacity:0">👑</div>
-            <div class="lb-name">EclipseRio</div>
-            <div>
-              <div class="lb-score">1,180 pts</div>
-              <div class="lb-meta">14 wins</div>
-            </div>
-          </div>
-          <div class="lb-entry">
-            <div class="lb-rank other">7</div>
-            <div class="lb-crown" style="opacity:0">👑</div>
-            <div class="lb-name">PetalFrost</div>
-            <div>
-              <div class="lb-score">990 pts</div>
-              <div class="lb-meta">11 wins</div>
-            </div>
+        <div class="section-label">✦ &nbsp; Stream Stats</div>
+        <div class="lb-game-tabs" id="lb-tabs-live"></div>
+        <div id="lb-boards-live">
+          <div class="empty-state" id="lb-loading">
+            <div class="big-icon">✦</div>
+            <p>Loading leaderboards…</p>
           </div>
         </div>
-
-        <!-- MARIO -->
-        <div class="lb-board" id="lb-mario" style="display:none">
-          <div class="lb-entry gold-entry">
-            <div class="lb-rank r1">1</div>
-            <div class="lb-crown">👑</div>
-            <div class="lb-name">StardustKai</div>
-            <div>
-              <div class="lb-score">1st × 22</div>
-              <div class="lb-meta">avg 2.1 place</div>
-            </div>
-          </div>
-          <div class="lb-entry silver-entry">
-            <div class="lb-rank r2">2</div>
-            <div class="lb-crown" style="opacity:0">👑</div>
-            <div class="lb-name">EclipseRio</div>
-            <div>
-              <div class="lb-score">1st × 17</div>
-              <div class="lb-meta">avg 2.8 place</div>
-            </div>
-          </div>
-          <div class="lb-entry bronze-entry">
-            <div class="lb-rank r3">3</div>
-            <div class="lb-crown" style="opacity:0">👑</div>
-            <div class="lb-name">MoonbeamMarta</div>
-            <div>
-              <div class="lb-score">1st × 14</div>
-              <div class="lb-meta">avg 3.2 place</div>
-            </div>
-          </div>
-          <div class="lb-entry">
-            <div class="lb-rank other">4</div>
-            <div class="lb-crown" style="opacity:0">👑</div>
-            <div class="lb-name">CrimsonFae</div>
-            <div>
-              <div class="lb-score">1st × 9</div>
-              <div class="lb-meta">avg 4.0 place</div>
-            </div>
-          </div>
-        </div>
-
-        <!-- SPEED -->
-        <div class="lb-board" id="lb-speed" style="display:none">
-          <div class="lb-entry gold-entry">
-            <div class="lb-rank r1">1</div>
-            <div class="lb-crown">👑</div>
-            <div class="lb-name">VoidPixel</div>
-            <div>
-              <div class="lb-score">1:42.33</div>
-              <div class="lb-meta">personal best</div>
-            </div>
-          </div>
-          <div class="lb-entry silver-entry">
-            <div class="lb-rank r2">2</div>
-            <div class="lb-crown" style="opacity:0">👑</div>
-            <div class="lb-name">PetalFrost</div>
-            <div>
-              <div class="lb-score">1:48.01</div>
-              <div class="lb-meta">personal best</div>
-            </div>
-          </div>
-          <div class="lb-entry bronze-entry">
-            <div class="lb-rank r3">3</div>
-            <div class="lb-crown" style="opacity:0">👑</div>
-            <div class="lb-name">NebulaNora</div>
-            <div>
-              <div class="lb-score">1:53.77</div>
-              <div class="lb-meta">personal best</div>
-            </div>
-          </div>
-        </div>
-
-        <!-- POINTS -->
-        <div class="lb-board" id="lb-points" style="display:none">
-          <div class="lb-entry gold-entry">
-            <div class="lb-rank r1">1</div>
-            <div class="lb-crown">👑</div>
-            <div class="lb-name">MoonbeamMarta</div>
-            <div>
-              <div class="lb-score">84,200 ✦</div>
-              <div class="lb-meta">top supporter</div>
-            </div>
-          </div>
-          <div class="lb-entry silver-entry">
-            <div class="lb-rank r2">2</div>
-            <div class="lb-crown" style="opacity:0">👑</div>
-            <div class="lb-name">CrimsonFae</div>
-            <div>
-              <div class="lb-score">71,540 ✦</div>
-              <div class="lb-meta">loyal fairy</div>
-            </div>
-          </div>
-          <div class="lb-entry bronze-entry">
-            <div class="lb-rank r3">3</div>
-            <div class="lb-crown" style="opacity:0">👑</div>
-            <div class="lb-name">StardustKai</div>
-            <div>
-              <div class="lb-score">58,900 ✦</div>
-              <div class="lb-meta">stardust collector</div>
-            </div>
-          </div>
-          <div class="lb-entry">
-            <div class="lb-rank other">4</div>
-            <div class="lb-crown" style="opacity:0">👑</div>
-            <div class="lb-name">EclipseRio</div>
-            <div>
-              <div class="lb-score">44,220 ✦</div>
-              <div class="lb-meta">moonchild</div>
-            </div>
-          </div>
-        </div>
-
         <div class="section-label" style="margin-top:24px;">🌙 &nbsp; Note</div>
-        <p style="font-family:var(--serif);font-style:italic;font-size:13px;color:var(--muted);line-height:1.7;">Leaderboards update after each hosted game. Ask Alex in chat to be added! Points are awarded live on stream. ✦</p>
-
+        <p style="font-family:var(--serif);font-style:italic;font-size:13px;color:var(--muted);line-height:1.7;">Channel points, gifters &amp; cheers update live from Twitch during streams. Game leaderboards are managed by Alex. ✦</p>
       </div>
     </div>
 
@@ -955,120 +1032,24 @@
     <div class="inline-panel" id="panel-events">
       <div class="iframe-header">
         <button class="back-btn">‹ Back</button>
-        <span class="iframe-label">events &amp; games</span>
+        <span class="iframe-label">events &amp; schedule</span>
       </div>
       <div class="panel-inner">
 
-        <div class="section-label">🌸 &nbsp; Upcoming</div>
+        <div class="section-label">🌙 &nbsp; This Week</div>
+        <div id="weekly-schedule" class="weekly-grid">
+          <!-- populated from API -->
+          <div class="week-empty">Loading schedule…</div>
+        </div>
+
+        <div class="section-label" style="margin-top:18px;">🌸 &nbsp; Upcoming</div>
         <div id="events-upcoming">
-
-        <div class="event-card featured">
-          <div class="event-date-block">
-            <div class="event-month">May</div>
-            <div class="event-day">3</div>
-          </div>
-          <div class="event-body">
-            <div class="event-name">✨ Fairy Trivia Night</div>
-            <div class="event-desc">Monthly viewer trivia tournament — 3 rounds, cosmic prizes, and chaos. The throne is up for grabs.</div>
-            <div>
-              <span class="event-tag">trivia</span>
-              <span class="event-tag">hosted game</span>
-              <span class="event-tag">prizes</span>
-            </div>
-            <a class="event-link" href="https://twitch.tv/astricalex" target="_blank" rel="noopener">
-              📺 Watch on Twitch
-            </a>
-          </div>
+          <div class="empty-state"><div class="big-icon">🌸</div><p>No upcoming events yet — check back soon.</p></div>
         </div>
 
-        <div class="event-card">
-          <div class="event-date-block">
-            <div class="event-month">May</div>
-            <div class="event-day">10</div>
-          </div>
-          <div class="event-body">
-            <div class="event-name">🏎 Mario Kart Invitational</div>
-            <div class="event-desc">Viewer race day — top 8 from the leaderboard get an invite. Spectators welcome.</div>
-            <div>
-              <span class="event-tag">mario kart</span>
-              <span class="event-tag">invitational</span>
-            </div>
-            <a class="event-link" href="https://twitch.tv/astricalex" target="_blank" rel="noopener">
-              📺 Watch on Twitch
-            </a>
-          </div>
-        </div>
-
-        <div class="event-card">
-          <div class="event-date-block">
-            <div class="event-month">May</div>
-            <div class="event-day">17</div>
-          </div>
-          <div class="event-body">
-            <div class="event-name">🌙 Moonlight Speedrun Relay</div>
-            <div class="event-desc">Team speedrun event — viewers form teams and race through a curated category. Starts at midnight stream time.</div>
-            <div>
-              <span class="event-tag">speedrun</span>
-              <span class="event-tag">relay</span>
-              <span class="event-tag">teams</span>
-            </div>
-            <a class="event-link" href="https://twitch.tv/astricalex" target="_blank" rel="noopener">
-              📺 Watch on Twitch
-            </a>
-          </div>
-        </div>
-
-        <div class="event-card">
-          <div class="event-date-block">
-            <div class="event-month">May</div>
-            <div class="event-day">24</div>
-          </div>
-          <div class="event-body">
-            <div class="event-name">☁ Channel Anniversary Celebration</div>
-            <div class="event-desc">Alex's channel anniversary stream — all-day special with game shows, giveaways, and a very chaotic grand finale.</div>
-            <div>
-              <span class="event-tag">anniversary</span>
-              <span class="event-tag">special</span>
-              <span class="event-tag">giveaways</span>
-            </div>
-            <a class="event-link" href="https://twitch.tv/astricalex" target="_blank" rel="noopener">
-              📺 Watch on Twitch
-            </a>
-          </div>
-        </div>
-
-        </div><!-- /events-upcoming -->
         <div class="section-label" style="margin-top:22px;">☽ &nbsp; Recurring</div>
-
         <div id="events-recurring">
-        <div class="event-card">
-          <div class="event-date-block" style="background:rgba(232,200,122,0.08);">
-            <div class="event-month">Every</div>
-            <div class="event-day" style="font-size:14px;padding-top:4px;">Fri</div>
-          </div>
-          <div class="event-body">
-            <div class="event-name">🌟 Friday Game Night</div>
-            <div class="event-desc">Weekly viewer games. Come early, get in the queue, win stars.</div>
-            <div>
-              <span class="event-tag">weekly</span>
-              <span class="event-tag">viewer games</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="event-card">
-          <div class="event-date-block" style="background:rgba(184,146,216,0.08);">
-            <div class="event-month">Every</div>
-            <div class="event-day" style="font-size:14px;padding-top:4px;">Sun</div>
-          </div>
-          <div class="event-body">
-            <div class="event-name">🌸 Chill Sunday Hangout</div>
-            <div class="event-desc">Low-key games and community vibes. Alex picks what she feels. No leaderboard pressure.</div>
-            <div>
-              <span class="event-tag">weekly</span>
-              <span class="event-tag">chill</span>
-            </div>
-          </div>
+          <div class="empty-state"><div class="big-icon">🌙</div><p>Loading schedule…</p></div>
         </div>
 
       </div>
@@ -1082,6 +1063,80 @@
       </div>
       <div class="iframe-wrap">
         <iframe src="clips.html" title="AstricAlex Clips" allow="autoplay; fullscreen"></iframe>
+      </div>
+    </div>
+
+    <!-- ── SUPPORT ── -->
+    <div class="inline-panel" id="panel-support">
+      <div class="iframe-header">
+        <button class="back-btn">‹ Back</button>
+        <span class="iframe-label">support alex</span>
+      </div>
+      <div class="panel-inner">
+        <div class="section-label">💜 &nbsp; Support the Stream</div>
+        <p class="about-bio" style="font-size:13px;">Every bit of support keeps the fairy lights on and the games going. Thank you so much. ✦</p>
+
+        <div style="display:flex;flex-direction:column;gap:10px;margin-top:18px;">
+          <a class="support-card" href="https://ko-fi.com/astricalex_" target="_blank" rel="noopener">
+            <div class="support-icon">☕</div>
+            <div class="support-text">
+              <div class="support-title">Ko-fi</div>
+              <div class="support-sub">buy alex a coffee · ko-fi.com/astricalex_</div>
+            </div>
+            <div class="support-arrow">›</div>
+          </a>
+          <a class="support-card" href="https://throne.com/astricalex/wishlist" target="_blank" rel="noopener">
+            <div class="support-icon">🎁</div>
+            <div class="support-text">
+              <div class="support-title">Wishlist</div>
+              <div class="support-sub">send a gift · throne.com/astricalex</div>
+            </div>
+            <div class="support-arrow">›</div>
+          </a>
+        </div>
+
+        <div class="section-label" style="margin-top:28px;">✦ &nbsp; Other Ways to Support</div>
+        <p class="about-bio" style="font-size:13px;font-style:normal;color:var(--muted);">Follow on Twitch · Share clips · Join the Discord · Participate in stream games · Gift subs to other viewers</p>
+      </div>
+    </div>
+
+    <!-- ── FAN ART ── -->
+    <div class="inline-panel" id="panel-fanart">
+      <div class="iframe-header">
+        <button class="back-btn">‹ Back</button>
+        <span class="iframe-label">fan art gallery</span>
+      </div>
+      <div class="panel-inner" id="fanart-panel-inner">
+        <div class="gallery-room" id="gallery-room">
+          <!-- Art pieces injected by JS -->
+          <div class="empty-state" id="gallery-empty" style="display:none">
+            <div class="big-icon">🖼</div>
+            <p>No fan art yet — be the first to submit!</p>
+          </div>
+          <div class="gallery-loading" id="gallery-loading">
+            <div class="big-icon" style="font-size:28px;opacity:0.3;">✦</div>
+            <p style="font-family:var(--serif);font-style:italic;font-size:13px;color:var(--muted);">Opening the gallery…</p>
+          </div>
+        </div>
+
+        <div class="section-label" style="margin-top:28px;">🌸 &nbsp; Submit Fan Art</div>
+        <div class="fanart-submit-box">
+          <div class="field-inline">
+            <input id="fa-name" type="text" placeholder="Your name / username" class="fa-input"/>
+          </div>
+          <div class="field-inline" style="margin-top:8px;">
+            <label class="fa-file-label">
+              <input id="fa-file" type="file" accept="image/*" style="display:none"/>
+              <span id="fa-file-text">📎 &nbsp; Choose image…</span>
+            </label>
+          </div>
+          <div class="field-inline" style="margin-top:8px;">
+            <input id="fa-title" type="text" placeholder="Art title (optional)" class="fa-input"/>
+          </div>
+          <button id="fa-submit-btn" class="fa-submit-btn">✦ &nbsp; Send to Alex</button>
+          <div id="fa-status" class="fa-status"></div>
+          <p style="font-size:9px;letter-spacing:1px;color:var(--muted);margin-top:8px;">Submissions go directly to Alex by email. By submitting you confirm this is your original art.</p>
+        </div>
       </div>
     </div>
 
@@ -1123,9 +1178,7 @@
         </div>
 
         <div class="section-label" style="margin-top:22px;">🌸 &nbsp; Stream Schedule</div>
-        <p class="about-bio about-sched-text" style="font-style:normal;font-size:13px;color:var(--muted);">
-          Friday nights · Sunday afternoons · Special events announced on Discord & Twitter. Check the Events tab for what's coming up next.
-        </p>
+        <p class="about-bio about-sched-text" style="font-style:normal;font-size:13px;color:var(--muted);">Loading schedule…</p>
 
         <div class="section-label">☽ &nbsp; Theme</div>
         <p class="about-bio" style="font-size:13px;">
@@ -1219,35 +1272,86 @@
     }
   });
 
-  // ── LEADERBOARD GAME TABS ──
-  const boards = { trivia: 'lb-trivia', mario: 'lb-mario', speed: 'lb-speed', points: 'lb-points' };
-  document.querySelectorAll('.lb-tab').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('.lb-tab').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      Object.values(boards).forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.style.display = 'none';
+  // ── LEADERBOARD — dynamically built from live API ──
+  let _lbActiveBoardId = null;
+
+  function buildLeaderboard(games) {
+    const tabsEl   = document.getElementById('lb-tabs-live');
+    const boardsEl = document.getElementById('lb-boards-live');
+    const loading  = document.getElementById('lb-loading');
+    if (loading) loading.remove();
+
+    const gameKeys = Object.keys(games);
+    if (!gameKeys.length) return;
+
+    tabsEl.innerHTML   = '';
+    boardsEl.innerHTML = '';
+
+    gameKeys.forEach((key, i) => {
+      const game    = games[key];
+      const entries = game.entries || [];
+
+      // Tab button
+      const btn = document.createElement('button');
+      btn.className    = 'lb-tab' + (i === 0 ? ' active' : '');
+      btn.dataset.game = key;
+      btn.textContent  = game.label;
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.lb-tab').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        document.querySelectorAll('.lb-board').forEach(b => b.style.display = 'none');
+        const bd = document.getElementById('lb-live-'+key);
+        if (bd) bd.style.display = 'flex';
+        _lbActiveBoardId = key;
       });
-      const target = document.getElementById(boards[btn.dataset.game]);
-      if (target) target.style.display = 'flex';
+      tabsEl.appendChild(btn);
+
+      // Board
+      const board = document.createElement('div');
+      board.className = 'lb-board';
+      board.id        = 'lb-live-' + key;
+      board.style.display = i === 0 ? 'flex' : 'none';
+
+      if (!entries.length) {
+        board.innerHTML = '<div style="padding:20px;color:var(--muted);font-family:var(--serif);font-style:italic;font-size:13px;">No entries yet — check back after a stream!</div>';
+      } else {
+        entries.slice(0, 10).forEach((e, idx) => {
+          const cls    = idx===0?'gold-entry':idx===1?'silver-entry':idx===2?'bronze-entry':'';
+          const rc     = idx===0?'r1':idx===1?'r2':idx===2?'r3':'other';
+          const crown  = idx===0 ? '👑' : '';
+          const el     = document.createElement('div');
+          el.className = 'lb-entry ' + cls;
+          el.innerHTML = `
+            <div class="lb-rank ${rc}">${idx+1}</div>
+            <div class="lb-crown" style="opacity:${idx===0?1:0}">${crown||'👑'}</div>
+            <div class="lb-name">${escHtml(e.name)}</div>
+            <div><div class="lb-score">${escHtml(String(e.score))}</div>
+            <div class="lb-meta">${escHtml(e.meta||'')}</div></div>`;
+          board.appendChild(el);
+        });
+      }
+      boardsEl.appendChild(board);
     });
-  });
+    _lbActiveBoardId = gameKeys[0];
+  }
 
   // ── LIVE DATA LOADER ──
   const API = 'https://cocreate-production.up.railway.app';
 
   async function loadLiveData() {
     try {
-      const [about, events, schedule, lb] = await Promise.all([
+      const [about, events, schedule, lb, fanart] = await Promise.all([
         fetch(`${API}/api/alex/about`).then(r=>r.json()),
         fetch(`${API}/api/alex/events`).then(r=>r.json()),
         fetch(`${API}/api/alex/schedule`).then(r=>r.json()),
         fetch(`${API}/api/alex/leaderboard`).then(r=>r.json()),
+        fetch(`${API}/api/alex/fanart`).then(r=>r.json()).catch(()=>({art:[]})),
       ]);
       applyAbout(about);
       applyEvents(events.events || [], schedule.recurring || []);
-      applyLeaderboard(lb.games || {});
+      buildLeaderboard(lb.games || {});
+      buildWeeklySchedule(schedule.recurring || []);
+      buildGallery(fanart.art || []);
     } catch(e) {
       console.warn('Could not load live data:', e.message);
     }
@@ -1345,9 +1449,270 @@
 
   function escHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
+  // ── WEEKLY SCHEDULE ──
+  function buildWeeklySchedule(recurring) {
+    const el    = document.getElementById('weekly-schedule');
+    if (!el) return;
+    const days  = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+    const today = new Date();
+    // Get this week Sun–Sat
+    const weekStart = new Date(today);
+    weekStart.setDate(today.getDate() - today.getDay());
+
+    // Map recurring by day abbrev
+    const byDay = {};
+    recurring.forEach(r => {
+      const abbr = (r.day||'').slice(0,3);
+      byDay[abbr] = r;
+    });
+
+    el.innerHTML = days.map((d, i) => {
+      const date    = new Date(weekStart);
+      date.setDate(weekStart.getDate() + i);
+      const isToday = date.toDateString() === today.toDateString();
+      const event   = byDay[d];
+      return `<div class="week-day${event?' has-event':''}${isToday?' today':''}">
+        <div class="week-day-name">${d}</div>
+        <div class="week-day-num">${date.getDate()}</div>
+        ${event ? `<div class="week-day-dot"></div><div class="week-day-label">${escHtml(event.label||'')}</div>` : ''}
+      </div>`;
+    }).join('');
+  }
+
+  // ── GALLERY ──
+  function buildGallery(art) {
+    const room    = document.getElementById('gallery-room');
+    const loading = document.getElementById('gallery-loading');
+    const empty   = document.getElementById('gallery-empty');
+    if (loading) loading.remove();
+    if (!art.length) { if (empty) empty.style.display = 'flex'; return; }
+
+    art.forEach((piece, i) => {
+      const frame = document.createElement('div');
+      frame.className = 'art-frame';
+      frame.style.animationDelay = (i * 0.06) + 's';
+      frame.innerHTML = `
+        <div class="art-spotlight"></div>
+        <div class="art-mount">
+          <img class="art-image" src="${escHtml(piece.url)}" alt="${escHtml(piece.title||'Fan Art')}" loading="lazy"/>
+          <div class="art-plaque">
+            <span class="art-plaque-title">${escHtml(piece.title||'Untitled')}</span>
+            <span class="art-plaque-by">${escHtml(piece.artist||'')}</span>
+          </div>
+        </div>
+        <div class="art-wall-label">${escHtml(piece.artist||'')}</div>`;
+      frame.addEventListener('click', () => openLightbox(piece));
+      room.appendChild(frame);
+    });
+  }
+
+  // ── LIGHTBOX ──
+  const lightbox = document.getElementById('art-lightbox');
+
+  function openLightbox(piece) {
+    document.getElementById('art-lightbox-img').src   = piece.url;
+    document.getElementById('art-lightbox-title').textContent = piece.title || 'Untitled';
+    document.getElementById('art-lightbox-by').textContent   = piece.artist ? 'by ' + piece.artist : '';
+    lightbox.classList.add('open');
+  }
+
+  document.getElementById('art-lightbox-close').addEventListener('click', () => lightbox.classList.remove('open'));
+  lightbox.addEventListener('click', e => { if (e.target === lightbox) lightbox.classList.remove('open'); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') lightbox.classList.remove('open'); });
+
+  // ── FAN ART SUBMIT ──
+  document.getElementById('fa-file').addEventListener('change', e => {
+    const file = e.target.files[0];
+    document.getElementById('fa-file-text').textContent = file ? '📎 ' + file.name : '📎 Choose image…';
+  });
+
+  document.getElementById('fa-submit-btn').addEventListener('click', async () => {
+    const name  = document.getElementById('fa-name').value.trim();
+    const title = document.getElementById('fa-title').value.trim();
+    const file  = document.getElementById('fa-file').files[0];
+    const stat  = document.getElementById('fa-status');
+
+    if (!name || !file) { stat.textContent = 'Please add your name and choose an image.'; stat.className = 'fa-status err'; return; }
+
+    const btn = document.getElementById('fa-submit-btn');
+    btn.disabled = true; stat.textContent = 'Sending…'; stat.className = 'fa-status';
+
+    try {
+      const formData = new FormData();
+      formData.append('artist', name);
+      formData.append('title',  title);
+      formData.append('image',  file);
+
+      const r = await fetch(`${API}/api/alex/fanart/submit`, { method: 'POST', body: formData });
+      const d = await r.json();
+      if (d.ok) {
+        stat.textContent = '✦ Sent! Alex will see it soon.'; stat.className = 'fa-status ok';
+        document.getElementById('fa-name').value = '';
+        document.getElementById('fa-title').value = '';
+        document.getElementById('fa-file').value = '';
+        document.getElementById('fa-file-text').textContent = '📎 Choose image…';
+      } else {
+        stat.textContent = 'Error: ' + (d.error || 'unknown'); stat.className = 'fa-status err';
+      }
+    } catch(e) {
+      stat.textContent = 'Could not send — try again.'; stat.className = 'fa-status err';
+    } finally { btn.disabled = false; }
+  });
+
+  // ── USER AUTH ────────────────────────────────────────────────────────────────
+  const USER_TOKEN_KEY = 'alex_user_token';
+  let _currentUser     = null;
+  let _checkedInToday  = false;
+
+  function getUserToken()     { return localStorage.getItem(USER_TOKEN_KEY); }
+  function saveUserToken(t)   { localStorage.setItem(USER_TOKEN_KEY, t); }
+  function clearUserToken()   { localStorage.removeItem(USER_TOKEN_KEY); }
+
+  function setLoggedInUI(user, streak, checkedIn) {
+    _currentUser    = user;
+    _checkedInToday = checkedIn;
+
+    document.getElementById('twitch-login-btn').style.display = 'none';
+    const wrap = document.getElementById('user-avatar-wrap');
+    wrap.style.display = 'flex';
+    document.getElementById('user-avatar').src = user.avatar_url || '';
+    document.getElementById('user-name').textContent  = user.display_name || user.login;
+
+    // Check-in card
+    const card = document.getElementById('checkin-card');
+    card.classList.add('show');
+    updateCheckinUI(streak, checkedIn);
+
+    // Pre-fill fan art name if empty
+    const faName = document.getElementById('fa-name');
+    if (faName && !faName.value) faName.value = user.display_name || user.login;
+  }
+
+  function updateCheckinUI(streak, checkedIn) {
+    const btn    = document.getElementById('checkin-btn');
+    const info   = document.getElementById('checkin-streak');
+    const sub    = document.getElementById('checkin-sub');
+    const streak7 = streak?.current || 0;
+
+    if (checkedIn) {
+      btn.textContent = '✓ Done';
+      btn.disabled    = true;
+      btn.classList.add('done');
+    } else {
+      btn.textContent = 'Check in ✦';
+      btn.disabled    = false;
+      btn.classList.remove('done');
+    }
+
+    // Streak flame display
+    const flames = streak7 >= 7 ? '🔥🔥🔥' : streak7 >= 3 ? '🔥🔥' : streak7 >= 1 ? '🔥' : '🌙';
+    info.innerHTML = `${flames} &nbsp; ${streak7} day streak`;
+
+    if (streak?.raffle_eligible) {
+      sub.innerHTML = `<span class="raffle-badge">✦ raffle eligible · ${streak.raffle_entries} ${streak.raffle_entries===1?'entry':'entries'}</span>`;
+    } else {
+      const need = 7 - (streak7 % 7);
+      sub.textContent = checkedIn
+        ? `come back tomorrow · ${need} day${need===1?'':'s'} to raffle entry`
+        : `check in to keep your streak · ${need} day${need===1?'':'s'} to entry`;
+    }
+  }
+
+  async function tryRestoreSession() {
+    const token = getUserToken();
+    if (!token) return;
+    try {
+      const r = await fetch(`${API}/api/alex/auth/me`, {
+        headers: { 'X-Alex-User': token }
+      });
+      if (!r.ok) { clearUserToken(); return; }
+      const d = await r.json();
+      if (d.ok) setLoggedInUI(d.user, d.streak, d.checked_in_today);
+    } catch(e) { console.warn('Session restore failed:', e.message); }
+  }
+
+  // Twitch login — reuse the OAuth popup flow from stream.html
+  document.getElementById('twitch-login-btn').addEventListener('click', async () => {
+    try {
+      // Fetch client ID from server
+      const ciRes    = await fetch(`${API}/api/twitch-client-id`);
+      const { client_id } = await ciRes.json();
+      const redirectUri  = encodeURIComponent('https://skidaggabatee.github.io/astrica/twitch_callback.html');
+      const state        = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2);
+      const authUrl      = `https://id.twitch.tv/oauth2/authorize?client_id=${client_id}&redirect_uri=${redirectUri}&response_type=token&scope=chat%3Aread+chat%3Aedit&state=${state}`;
+
+      const popup = window.open(authUrl, 'twitch_auth', 'width=520,height=680,menubar=no,toolbar=no');
+
+      const handler = async (e) => {
+        if (!e.data?.type === 'twitch_oauth') return;
+        if (e.data.type !== 'twitch_oauth') return;
+        window.removeEventListener('message', handler);
+        popup?.close();
+
+        const twitchToken = e.data.token;
+        if (!twitchToken) return;
+
+        // Exchange Twitch token for app session
+        const r = await fetch(`${API}/api/alex/auth/twitch`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ twitch_token: twitchToken })
+        });
+        const d = await r.json();
+        if (d.ok) {
+          saveUserToken(d.session_token);
+          // Also save twitch token for stream page passthrough
+          localStorage.setItem('alex_chat_token', twitchToken);
+          localStorage.setItem('alex_chat_user', d.user.login);
+          setLoggedInUI(d.user, { current: 0, raffle_eligible: false, raffle_entries: 0 }, false);
+        }
+      };
+      window.addEventListener('message', handler);
+    } catch(e) { console.error('Login error:', e.message); }
+  });
+
+  // Check-in button
+  document.getElementById('checkin-btn').addEventListener('click', async () => {
+    const token = getUserToken();
+    if (!token) return;
+    const btn = document.getElementById('checkin-btn');
+    btn.disabled = true;
+    try {
+      const r = await fetch(`${API}/api/alex/checkin`, {
+        method: 'POST', headers: { 'X-Alex-User': token }
+      });
+      const d = await r.json();
+      if (d.ok) {
+        _checkedInToday = true;
+        updateCheckinUI({ current: d.streak, longest: d.longest, raffle_eligible: d.raffle_eligible, raffle_entries: d.raffle_entries }, true);
+        if (d.completed_week) {
+          setTimeout(() => alert('🎉 7-day streak complete! You've earned a raffle entry!'), 300);
+        }
+      } else if (d.already) {
+        _checkedInToday = true;
+        btn.textContent = '✓ Done'; btn.classList.add('done');
+      }
+    } catch(e) { btn.disabled = false; }
+  });
+
   // Load live data after dashboard becomes visible
-  const _origEnter = enterBtn.onclick;
-  enterBtn.addEventListener('click', () => setTimeout(loadLiveData, 800));
+  enterBtn.addEventListener('click', () => {
+    setTimeout(loadLiveData, 800);
+    setTimeout(tryRestoreSession, 600);
+  });
 </script>
+
+<!-- ART LIGHTBOX -->
+<div id="art-lightbox">
+  <button id="art-lightbox-close">✕</button>
+  <div id="art-lightbox-inner">
+    <img id="art-lightbox-img" src="" alt=""/>
+    <div id="art-lightbox-meta">
+      <div id="art-lightbox-title"></div>
+      <div id="art-lightbox-by"></div>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
