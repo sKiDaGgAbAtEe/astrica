@@ -1700,9 +1700,7 @@
     setTimeout(loadLiveData, 800);
     setTimeout(tryRestoreSession, 600);
   });
-</script>
-
-<!-- ART LIGHTBOX -->
+<!-- ART LIGHTBOX — must be before </script> so DOM exists when script runs -->
 <div id="art-lightbox">
   <button id="art-lightbox-close">✕</button>
   <div id="art-lightbox-inner">
@@ -1713,6 +1711,8 @@
     </div>
   </div>
 </div>
+
+</script>
 
 </body>
 </html>
