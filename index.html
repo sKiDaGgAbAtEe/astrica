@@ -1899,18 +1899,54 @@
         if (!twitchToken) return;
 
         // Exchange Twitch token for app session
-        const r = await fetch(apiUrl('/api/alex/auth/twitch'), {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ twitch_token: twitchToken })
-        });
-        const d = await r.json();
-        if (d.ok) {
-          saveUserToken(d.session_token);
-          // Also save twitch token for stream page passthrough
-          localStorage.setItem('alex_chat_token', twitchToken);
-          localStorage.setItem('alex_chat_user', d.user.login);
-          setLoggedInUI(d.user, { current: 0, raffle_eligible: false, raffle_entries: 0 }, false);
+        try {
+          const r = await fetch(apiUrl('/api/alex/auth/twitch'), {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ twitch_token: twitchToken })
+          });
+          const d = await r.json();
+          console.log('[Auth] server response:', d);
+          if (d.ok) {
+            saveUserToken(d.session_token);
+            localStorage.setItem('alex_chat_token', twitchToken);
+            localStorage.setItem('alex_chat_user', d.user.login);
+            setLoggedInUI(d.user, { current: 0, raffle_eligible: false, raffle_entries: 0 }, false);
+          } else {
+            // Server failed — fall back to Twitch identity directly
+            console.warn('[Auth] server error, using Twitch token directly:', d.error);
+            const uRes = await fetch('https://api.twitch.tv/helix/users', {
+              headers: { 'Authorization': `Bearer ${twitchToken}`, 'Client-Id': client_id }
+            });
+            const uData = await uRes.json();
+            const profile = uData.data?.[0];
+            if (profile) {
+              localStorage.setItem('alex_chat_token', twitchToken);
+              localStorage.setItem('alex_chat_user', profile.login);
+              setLoggedInUI({
+                id: profile.id,
+                login: profile.login,
+                display_name: profile.display_name,
+                avatar_url: profile.profile_image_url
+              }, { current: 0, raffle_eligible: false, raffle_entries: 0 }, false);
+            }
+          }
+        } catch(err) {
+          console.error('[Auth] fetch error:', err.message);
+          // Still try to get Twitch identity as last resort
+          try {
+            const uRes = await fetch('https://api.twitch.tv/helix/users', {
+              headers: { 'Authorization': `Bearer ${twitchToken}`, 'Client-Id': client_id }
+            });
+            const uData = await uRes.json();
+            const profile = uData.data?.[0];
+            if (profile) {
+              setLoggedInUI({
+                id: profile.id, login: profile.login,
+                display_name: profile.display_name, avatar_url: profile.profile_image_url
+              }, { current: 0, raffle_eligible: false, raffle_entries: 0 }, false);
+            }
+          } catch(_) {}
         }
       };
       window.addEventListener('message', handler);
