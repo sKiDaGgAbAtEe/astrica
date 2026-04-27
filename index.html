@@ -883,28 +883,8 @@
     #logout-btn:hover { background: var(--rose-dim); color: var(--rose); border-color: rgba(196,102,122,0.3); }
 
     /* ── CHECK-IN BUTTON ── */
-    #checkin-card {
-      display: none; position: fixed;
-      bottom: 24px; right: 18px;
-      z-index: 50; flex-direction: column; align-items: center; gap: 4px;
-      animation: fadeUp 0.4s ease both;
-    }
-    #checkin-card.show { display: flex; }
-    #checkin-btn {
-      width: 54px; height: 54px; border-radius: 50%;
-      background: rgba(74,29,110,0.75);
-      border: 1.5px solid rgba(184,146,216,0.4);
-      color: var(--lavender); font-size: 20px;
-      cursor: pointer; display: flex; align-items: center; justify-content: center;
-      transition: all 0.2s; box-shadow: 0 4px 20px rgba(74,29,110,0.5);
-      backdrop-filter: blur(10px);
-    }
-    #checkin-btn:hover:not(:disabled) { background: rgba(100,40,160,0.85); transform: scale(1.05); box-shadow: 0 6px 24px rgba(184,146,216,0.3); }
-    #checkin-btn:disabled { opacity: 0.5; cursor: default; }
-    #checkin-btn.done { background: rgba(30,80,50,0.75); border-color: rgba(125,212,160,0.4); color: #7dd4a0; }
-    #checkin-info { display: none; }
-    #checkin-streak { font-size: 9px; color: var(--lavender); text-align: center; letter-spacing: 0.5px; max-width: 60px; line-height: 1.3; }
-    #checkin-sub    { display: none; }
+    #checkin-card { animation: fadeUp 0.4s ease both; }
+    #checkin-card.show { display: block !important; }
 
     /* ── RAFFLE BADGE ── */
     .raffle-badge {
@@ -1038,15 +1018,6 @@
     <!-- ── HOME ── -->
     <div class="cards-panel active" id="panel-home">
 
-      <div id="checkin-card">
-        <div id="checkin-info">
-          <div id="checkin-streak">🌙 &nbsp; Daily Check-in</div>
-          <div id="checkin-sub">Sign in to start your streak</div>
-        </div>
-        <button id="checkin-btn" disabled title="Daily Check-in">🌙</button>
-        <div id="checkin-streak-label" style="font-size:8px;color:rgba(184,146,216,0.7);letter-spacing:1px;text-align:center;"></div>
-      </div>
-
       <a class="twitch-pill" href="https://twitch.tv/astricalex" target="_blank" rel="noopener">
         <span>📺</span> twitch.tv/astricalex
       </a>
@@ -1099,6 +1070,17 @@
           <div class="card-sub">gallery &amp; submissions</div>
         </div>
         <div class="card-arrow">›</div>
+      </div>
+
+      <div id="checkin-card" style="display:none;">
+        <div class="fairy-card" id="checkin-inner" style="background:rgba(40,10,70,0.75);border-color:rgba(184,146,216,0.25);cursor:pointer;opacity:0.95;">
+          <div class="card-icon" style="background:rgba(74,29,110,0.6);" id="checkin-icon">🌙</div>
+          <div class="card-text">
+            <div class="card-title" id="checkin-title">Daily Check-in</div>
+            <div class="card-sub" id="checkin-sub">Sign in to check in</div>
+          </div>
+          <div class="card-arrow" id="checkin-arrow">›</div>
+        </div>
       </div>
 
       <div class="fairy-card" data-open="support"
@@ -1817,7 +1799,7 @@
 
     // Check-in card
     const card = document.getElementById('checkin-card');
-    card.classList.add('show');
+    card.style.display = 'block';
     updateCheckinUI(streak, checkedIn);
 
     // Pre-fill fan art name if empty
@@ -1826,34 +1808,35 @@
   }
 
   function updateCheckinUI(streak, checkedIn) {
-    const btn    = document.getElementById('checkin-btn');
-    const info   = document.getElementById('checkin-streak');
-    const sub    = document.getElementById('checkin-sub');
+    const icon  = document.getElementById('checkin-icon');
+    const title = document.getElementById('checkin-title');
+    const sub   = document.getElementById('checkin-sub');
+    const arrow = document.getElementById('checkin-arrow');
+    const inner = document.getElementById('checkin-inner');
     const streak7 = streak?.current || 0;
+    const flames = streak7 >= 7 ? '🔥' : streak7 >= 3 ? '✨' : '🌙';
 
     if (checkedIn) {
-      btn.textContent = '✓';
-      btn.disabled    = true;
-      btn.classList.add('done');
+      if (icon)  icon.textContent  = '✓';
+      if (title) title.textContent = 'Checked In!';
+      if (sub)   sub.textContent   = streak7 > 0 ? `${streak7} day streak — come back tomorrow` : 'See you tomorrow!';
+      if (arrow) arrow.textContent = '';
+      if (inner) inner.style.borderColor = 'rgba(125,212,160,0.35)';
     } else {
-      btn.textContent = '🌙';
-      btn.disabled    = false;
-      btn.classList.remove('done');
-    }
-
-    // Streak flame display
-    const flames = streak7 >= 7 ? '🔥🔥🔥' : streak7 >= 3 ? '🔥🔥' : streak7 >= 1 ? '🔥' : '🌙';
-    info.innerHTML = `${flames} &nbsp; ${streak7} day streak`;
-    const lbl = document.getElementById('checkin-streak-label');
-    if (lbl) lbl.textContent = streak7 > 0 ? `${streak7} day${streak7===1?'':'s'}` : '';
-
-    if (streak?.raffle_eligible) {
-      sub.innerHTML = `<span class="raffle-badge">✦ raffle eligible · ${streak.raffle_entries} ${streak.raffle_entries===1?'entry':'entries'}</span>`;
-    } else {
+      if (icon)  icon.textContent  = flames;
+      if (title) title.textContent = 'Daily Check-in';
       const need = 7 - (streak7 % 7);
-      sub.textContent = checkedIn
-        ? `come back tomorrow · ${need} day${need===1?'':'s'} to raffle entry`
-        : `check in to keep your streak · ${need} day${need===1?'':'s'} to entry`;
+      if (sub) {
+        if (streak?.raffle_eligible) {
+          sub.textContent = `✦ raffle eligible · ${streak.raffle_entries} entr${streak.raffle_entries===1?'y':'ies'}`;
+        } else {
+          sub.textContent = streak7 > 0
+            ? `${streak7} day streak · ${need} to raffle entry`
+            : 'Check in daily to earn raffle entries';
+        }
+      }
+      if (arrow) arrow.textContent = '›';
+      if (inner) inner.style.borderColor = 'rgba(184,146,216,0.25)';
     }
   }
 
