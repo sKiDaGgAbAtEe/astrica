@@ -216,16 +216,16 @@
     #topbar {
       position: relative; z-index: 20;
       display: flex;
-      align-items: center;
+      align-items: flex-start;
       justify-content: space-between;
-      padding: 18px 20px 10px;
+      padding: 14px 16px 8px;
       flex-shrink: 0;
       opacity: 0;
       transition: opacity 0.7s ease 0.1s;
     }
     #topbar.show { opacity: 1; }
 
-    #name-block { display: flex; flex-direction: column; gap: 2px; }
+    #name-block { display: flex; flex-direction: column; gap: 2px; align-items: center; text-align: center; flex: 1; }
     #name-block h1 {
       font-family: var(--serif);
       font-size: 24px;
@@ -852,7 +852,7 @@
 
     /* ── USER AUTH ── */
     #user-area {
-      display: flex; align-items: center; gap: 8px; flex-shrink: 0;
+      display: flex; align-items: flex-end; gap: 6px; flex-shrink: 0;
     }
     #twitch-login-btn {
       background: rgba(100,50,180,0.25); border: 1px solid rgba(184,146,216,0.25);
@@ -860,11 +860,10 @@
       letter-spacing: 1.5px; text-transform: uppercase;
       padding: 5px 12px; border-radius: 20px; cursor: pointer;
       transition: all 0.2s; white-space: nowrap;
-      display: none;
     }
     #twitch-login-btn:hover { background: rgba(184,146,216,0.18); }
     #user-avatar-wrap {
-      display: none; align-items: center; gap: 7px;
+      display: none; align-items: center; gap: 7px; flex-direction: row;
     }
     #user-avatar {
       width: 28px; height: 28px; border-radius: 50%;
@@ -1200,7 +1199,7 @@
         <span class="iframe-label">clips</span>
       </div>
       <div class="iframe-wrap">
-        <iframe src="alex_clips.html" title="AstricAlex Clips" allow="autoplay; fullscreen"></iframe>
+        <iframe src="astrica_clips.html" title="AstricAlex Clips" allow="autoplay; fullscreen"></iframe>
       </div>
     </div>
 
