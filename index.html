@@ -243,10 +243,11 @@
       letter-spacing: 2.5px;
       text-transform: uppercase;
       color: var(--muted);
+      white-space: nowrap;
     }
 
     #topbar-right {
-      display: flex; align-items: center; gap: 10px;
+      display: flex; flex-direction: column; align-items: flex-end; gap: 6px;
     }
 
     #vol-wrap {
@@ -407,7 +408,7 @@
       font-size: 12px; flex-shrink: 0;
     }
     .card-text { flex: 1; min-width: 0; }
-    .card-title { font-size: 11px; font-weight: 400; letter-spacing: 0.3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .card-title { font-family: var(--serif); font-size: 15px; font-weight: 400; font-style: italic; letter-spacing: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #fff; text-shadow: 0 0 12px rgba(184,146,216,0.3); }
     .card-sub   { font-size: 8.5px; color: var(--muted); margin-top: 1px; letter-spacing: 0.3px; }
     .card-arrow { font-size: 14px; color: var(--faint); flex-shrink: 0; }
 
@@ -859,6 +860,7 @@
       letter-spacing: 1.5px; text-transform: uppercase;
       padding: 5px 12px; border-radius: 20px; cursor: pointer;
       transition: all 0.2s; white-space: nowrap;
+      display: none;
     }
     #twitch-login-btn:hover { background: rgba(184,146,216,0.18); }
     #user-avatar-wrap {
@@ -999,7 +1001,7 @@
   <div id="topbar">
     <div id="name-block">
       <h1>Astric<em>Alex</em></h1>
-      <div class="tagline">☽ &nbsp; fairy of the celestial realm &nbsp; ☾</div>
+      <div class="tagline">☽ &nbsp; Celestial Fairy &nbsp; ☾</div>
     </div>
     <div id="topbar-right">
       <div id="vol-wrap">
@@ -1198,7 +1200,7 @@
         <span class="iframe-label">clips</span>
       </div>
       <div class="iframe-wrap">
-        <iframe src="alex_clips.html" title="AstricAlex Clips" allow="autoplay; fullscreen"></iframe>
+        <iframe src="astrica_clips.html" title="AstricAlex Clips" allow="autoplay; fullscreen"></iframe>
       </div>
     </div>
 
@@ -1946,7 +1948,11 @@
   // Load live data after dashboard becomes visible
   enterBtn.addEventListener('click', () => {
     setTimeout(loadLiveData, 800);
-    setTimeout(tryRestoreSession, 100);
+    setTimeout(() => {
+      tryRestoreSession().then(() => {
+        if (!_currentUser) document.getElementById('twitch-login-btn').style.display = '';
+      });
+    }, 100);
   });
 
   // In Discord — skip landing entirely, Discord handles auth
@@ -1960,13 +1966,16 @@
 
   // Also try to restore session on page load (for users who refresh while logged in)
   tryRestoreSession().then(() => {
-    // If already logged in, skip the landing screen entirely
     if (_currentUser) {
+      // Already logged in — skip landing entirely
       landing.style.display = 'none';
       dashboard.classList.add('visible');
       topbar.classList.add('show');
       tabNav.classList.add('show');
       setTimeout(loadLiveData, 200);
+    } else {
+      // Not logged in — show the sign in button
+      document.getElementById('twitch-login-btn').style.display = '';
     }
   });
 </script>
